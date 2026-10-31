@@ -249,6 +249,38 @@ hr {
 
         <hr>
 
+        <div class="seccion">Modelo digital y ortofotografía</div>
+
+        <div class="grupo">
+            <div class="cabecera">
+                <input type="checkbox" id="chkTerreno" checked>
+                <label for="chkTerreno">MDT TMDCANTABRIA (terreno 3D)</label>
+            </div>
+            <div class="fila">
+                <span>Exageración vertical</span>
+                <span class="valor" id="vTerreno">100 %</span>
+            </div>
+            <input class="rango" type="range" id="rTerreno"
+                   min="100" max="300" value="100" step="10">
+            <div class="estado" id="eTerreno">Pendiente de conexión</div>
+        </div>
+
+        <div class="grupo">
+            <div class="cabecera">
+                <input type="checkbox" id="chkOrto" checked>
+                <label for="chkOrto">Ortofotografía (Cesium ion)</label>
+            </div>
+            <div class="fila">
+                <span>Opacidad</span>
+                <span class="valor" id="vOrto">100 %</span>
+            </div>
+            <input class="rango" type="range" id="rOrto"
+                   min="0" max="100" value="100">
+            <div class="estado" id="eOrto">Pendiente de conexión</div>
+        </div>
+
+        <hr>
+
         <div class="seccion">Cartografía de Cantabria</div>
 
         <div id="listaServicios">
@@ -470,7 +502,7 @@ btnPanel.addEventListener("click", function () {
 
 // PEGA AQUÍ TU NUEVO TOKEN DE CESIUM ION
 
-Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
+Cesium.Ion.defaultAccessToken = 'PEGA_AQUI_TU_NUEVO_TOKEN_DE_CESIUM_ION';
 
     
 
@@ -478,6 +510,10 @@ Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI
 
 const ID_CUEVAS = 6088210;
 const ID_LIMITES = 6087242;
+
+// Recursos alojados en Cesium ion.
+const ID_TERRENO = 6087291; // MDT TMDCANTABRIA (Terrain)
+const ID_ORTO = 6087292;    // Ortofotografía (Imagery)
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
     terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -496,6 +532,10 @@ viewer.scene.globe.depthTestAgainstTerrain = true;
 
 let cuevas = null;
 let limites = null;
+
+let proveedorTerrenoMDT = null;
+const proveedorTerrenoPlano = new Cesium.EllipsoidTerrainProvider();
+let capaOrtofoto = null;
 
 const capasWMS = {};
 
@@ -605,6 +645,96 @@ function nombrePunto(entidad) {
 
     return entidad.name || "Punto";
 }
+
+// ==========================================
+// CONECTAR SERVICIO WMS
+async function cargarTerreno() {
+    estadoCapa("Terreno", "Conectando con TMDCANTABRIA…");
+
+    try {
+        proveedorTerrenoMDT =
+            await Cesium.CesiumTerrainProvider.fromIonAssetId(ID_TERRENO);
+
+        viewer.terrainProvider = proveedorTerrenoMDT;
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+
+        document.getElementById("chkTerreno").addEventListener("change", e => {
+            // La geometría del terreno no tiene opacidad. Se puede activar
+            // o desactivar sustituyéndola por una superficie elipsoidal.
+            viewer.terrainProvider = e.target.checked
+                ? proveedorTerrenoMDT
+                : proveedorTerrenoPlano;
+
+            estadoCapa(
+                "Terreno",
+                e.target.checked
+                    ? "MDT TMDCANTABRIA activo"
+                    : "Relieve desactivado (superficie plana)"
+            );
+            viewer.scene.requestRender();
+        });
+
+        // En un MDT, el control equivalente útil es la exageración vertical.
+        document.getElementById("rTerreno").addEventListener("input", e => {
+            const porcentaje = Number(e.target.value);
+            viewer.scene.verticalExaggeration = porcentaje / 100;
+            document.getElementById("vTerreno").textContent =
+                porcentaje + " %";
+            viewer.scene.requestRender();
+        });
+
+        estadoCapa("Terreno", "MDT TMDCANTABRIA conectado");
+        return true;
+
+    } catch (error) {
+        console.error("Error al cargar el MDT TMDCANTABRIA:", error);
+        estadoCapa(
+            "Terreno",
+            "Error al cargar el MDT; comprueba Asset ID, permisos y token",
+            true
+        );
+        return false;
+    }
+}
+
+
+async function cargarOrtofoto() {
+    estadoCapa("Orto", "Conectando con la ortofotografía…");
+
+    try {
+        const proveedor =
+            await Cesium.IonImageryProvider.fromAssetId(ID_ORTO);
+
+        capaOrtofoto = viewer.imageryLayers.addImageryProvider(proveedor);
+        capaOrtofoto.show = document.getElementById("chkOrto").checked;
+        capaOrtofoto.alpha = opacidad("Orto");
+
+        document.getElementById("chkOrto").addEventListener("change", e => {
+            capaOrtofoto.show = e.target.checked;
+            viewer.scene.requestRender();
+        });
+
+        document.getElementById("rOrto").addEventListener("input", e => {
+            const valor = Number(e.target.value);
+            capaOrtofoto.alpha = valor / 100;
+            document.getElementById("vOrto").textContent = valor + " %";
+            viewer.scene.requestRender();
+        });
+
+        estadoCapa("Orto", "Ortofotografía conectada");
+        return true;
+
+    } catch (error) {
+        console.error("Error al cargar la ortofotografía:", error);
+        estadoCapa(
+            "Orto",
+            "Error al cargar la ortofotografía; comprueba Asset ID y token",
+            true
+        );
+        return false;
+    }
+}
+
 
 // ==========================================
 // CONECTAR SERVICIO WMS
@@ -854,7 +984,7 @@ async function cargarCuevas() {
 
         estadoCapa(
             "Cuevas",
-            total + " yacimientos; " + cotasCalculadas + " cotas"
+            total + " yacimientos; " + cotasCalculadas + " cotas y " + etiquetasCreadas + " rótulos con línea guía"
         );
 
     } catch (error) {
@@ -980,7 +1110,17 @@ async function iniciar() {
         "Cargando capas. Los controles ya están disponibles."
     );
 
+    // El MDT debe estar listo antes de cargar las cuevas,
+    // porque sus cotas se muestrean para colocar puntos y rótulos.
+    await cargarTerreno();
+
     const tareas = [
+
+        cargarOrtofoto().catch(error => {
+            console.error("Error en la ortofotografía", error);
+            estadoCapa("Orto", "Error al cargar ortofotografía", true);
+            return false;
+        }),
 
         cargarCuevas().catch(error => {
 
