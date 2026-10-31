@@ -18,9 +18,7 @@ html, body, #cesiumContainer {
     overflow: hidden;
 }
 
-/* ==========================================
-   PANEL DE CAPAS: POSICIÓN Y APARIENCIA
-   ========================================== */
+/* PANEL DE CAPAS */
 
 #panelCapas {
     position: absolute;
@@ -41,9 +39,8 @@ html, body, #cesiumContainer {
     box-shadow: 0 3px 12px #0007;
     font: 11px Arial,sans-serif;
     transition: width .2s ease;
+    max-width: calc(100vw - 12px);
 }
-
-/* Cabecera fija con el botón */
 
 #panelCabecera {
     display: flex;
@@ -53,6 +50,9 @@ html, body, #cesiumContainer {
     margin-bottom: 9px;
     padding-bottom: 7px;
     border-bottom: 1px solid #65717c;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
 }
 
 #panelCabecera h3 {
@@ -60,8 +60,6 @@ html, body, #cesiumContainer {
     line-height: 1.3;
     margin: 0;
 }
-
-/* Botón minimizar / maximizar */
 
 #btnPanel {
     flex-shrink: 0;
@@ -74,6 +72,7 @@ html, body, #cesiumContainer {
     background: #394752;
     font: bold 18px Arial,sans-serif;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 #btnPanel:hover {
@@ -84,8 +83,6 @@ html, body, #cesiumContainer {
     outline: 2px solid #8ed0ff;
     outline-offset: 2px;
 }
-
-/* Estado minimizado */
 
 #panelCapas.minimizado {
     width: 205px;
@@ -103,9 +100,12 @@ html, body, #cesiumContainer {
     display: none;
 }
 
-/* ==========================================
-   ESTILOS DE LOS CONTROLES DE CAPAS
-   ========================================== */
+#panelCapas.arrastrando {
+    transition: none;
+    opacity: 0.88;
+}
+
+/* CONTROLES DE CAPAS */
 
 .grupo {
     margin: 8px 0;
@@ -180,7 +180,7 @@ hr {
     color: #d4dce3;
 }
 
-/* Adaptación a pantallas pequeñas */
+/* PANTALLAS PEQUEÑAS */
 
 @media(max-width:480px) {
     #panelCapas {
@@ -194,34 +194,6 @@ hr {
 
     #panelCapas.minimizado {
         width: min(205px, calc(100% - 12px));
-		
-/* Panel desplazable con el ratón */
-
-#panelCabecera {
-    cursor: move;
-    user-select: none;
-    touch-action: none;
-}
-
-#btnPanel {
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-/* Mientras se arrastra el panel */
-#panelCapas.arrastrando {
-    transition: none;
-    opacity: 0.88;
-}
-
-/* Evita que el panel exceda la pantalla */
-#panelCapas {
-    max-width: calc(100vw - 12px);
-}
-
-		
-		
-		
     }
 }
 </style>
@@ -231,22 +203,17 @@ hr {
 
 <div id="cesiumContainer"></div>
 
-<!-- ==========================================
-     PANEL DE CONTROL DE CAPAS
-     ========================================== -->
+<!-- PANEL DE CONTROL -->
 
 <div id="panelCapas">
 
     <div id="panelCabecera">
         <h3>Control de capas</h3>
-
-        <button
-            id="btnPanel"
+        <button id="btnPanel"
             type="button"
             aria-label="Minimizar panel de capas"
             aria-expanded="true"
-            title="Minimizar panel"
-        >−</button>
+            title="Minimizar panel">−</button>
     </div>
 
     <div id="contenidoCapas">
@@ -296,8 +263,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vTopo">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rTopo"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rTopo" min="0" max="100" value="100">
                 <div class="estado" id="eTopo">Pendiente</div>
             </div>
 
@@ -310,8 +276,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vRelieve">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rRelieve"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rRelieve" min="0" max="100" value="100">
                 <div class="estado" id="eRelieve">Pendiente</div>
             </div>
 
@@ -324,8 +289,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vGeo">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rGeo"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rGeo" min="0" max="100" value="100">
                 <div class="estado" id="eGeo">Pendiente</div>
             </div>
 
@@ -338,8 +302,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vHidro">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rHidro"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rHidro" min="0" max="100" value="100">
                 <div class="estado" id="eHidro">Pendiente</div>
             </div>
 
@@ -352,8 +315,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vPatrimonio">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rPatrimonio"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rPatrimonio" min="0" max="100" value="100">
                 <div class="estado" id="ePatrimonio">Pendiente</div>
             </div>
 
@@ -366,8 +328,7 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vTopoWMS">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rTopoWMS"
-                       min="0" max="100" value="100">
+                <input class="rango" type="range" id="rTopoWMS" min="0" max="100" value="100">
                 <div class="estado" id="eTopoWMS">Pendiente</div>
             </div>
 
@@ -382,22 +343,20 @@ hr {
 "use strict";
 
 // ==========================================
-// MINIMIZAR / MAXIMIZAR PANEL
+// PANEL: MINIMIZAR / MAXIMIZAR
 // ==========================================
 
 const panelCapas = document.getElementById("panelCapas");
 const btnPanel = document.getElementById("btnPanel");
 
 btnPanel.addEventListener("click", function () {
+
     const minimizado =
         panelCapas.classList.toggle("minimizado");
 
     btnPanel.textContent = minimizado ? "+" : "−";
 
-    btnPanel.setAttribute(
-        "aria-expanded",
-        String(!minimizado)
-    );
+    btnPanel.setAttribute("aria-expanded", String(!minimizado));
 
     btnPanel.setAttribute(
         "aria-label",
@@ -411,11 +370,12 @@ btnPanel.addEventListener("click", function () {
         : "Minimizar panel";
 });
 
-/* ==========================================
-   ARRASTRAR EL PANEL DE CAPAS
-   ========================================== */
+// ==========================================
+// PANEL: ARRASTRAR CON EL RATÓN
+// ==========================================
 
 (function hacerPanelMovible() {
+
     const panel = document.getElementById("panelCapas");
     const cabecera = document.getElementById("panelCabecera");
     const boton = document.getElementById("btnPanel");
@@ -427,15 +387,12 @@ btnPanel.addEventListener("click", function () {
     let panelY = 0;
 
     cabecera.addEventListener("pointerdown", function(e) {
-        // No iniciar el arrastre al pulsar minimizar/maximizar.
-        if (e.target === boton || boton.contains(e.target)) return;
 
+        if (e.target === boton || boton.contains(e.target)) return;
         if (e.button !== 0 && e.pointerType === "mouse") return;
 
         const rect = panel.getBoundingClientRect();
 
-        // Pasar de posición centrada o anclada a coordenadas
-        // explícitas para poder moverlo libremente.
         panel.style.left = rect.left + "px";
         panel.style.top = rect.top + "px";
         panel.style.right = "auto";
@@ -446,14 +403,17 @@ btnPanel.addEventListener("click", function () {
         inicioY = e.clientY;
         panelX = rect.left;
         panelY = rect.top;
+
         moviendo = true;
 
         cabecera.setPointerCapture(e.pointerId);
         panel.classList.add("arrastrando");
+
         e.preventDefault();
     });
 
     cabecera.addEventListener("pointermove", function(e) {
+
         if (!moviendo) return;
 
         const margen = 6;
@@ -485,6 +445,7 @@ btnPanel.addEventListener("click", function () {
     cabecera.addEventListener("pointercancel", finalizarArrastre);
 
     window.addEventListener("resize", function() {
+
         const rect = panel.getBoundingClientRect();
         const margen = 6;
 
@@ -501,18 +462,17 @@ btnPanel.addEventListener("click", function () {
         panel.style.left = x + "px";
         panel.style.top = y + "px";
     });
+
 })();
 
 // ==========================================
-// CONFIGURACIÓN DE CESIUM
+// CONFIGURACIÓN CESIUM
 // ==========================================
 
-// IMPORTANTE:
-// Sustituye el texto siguiente por tu token de Cesium ion.
-// No compartas públicamente un token privado.
+// PEGA AQUÍ TU NUEVO TOKEN DE CESIUM ION
 
-Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
-
+Cesium.Ion.defaultAccessToken =
+    "PEGA_AQUI_TU_NUEVO_TOKEN_DE_CESIUM_ION";
 
 const ID_CUEVAS = 6088210;
 const ID_LIMITES = 6087242;
@@ -538,42 +498,49 @@ const capasWMS = {};
 // ==========================================
 
 const servicios = [
+
     {
         id: "Topo",
         nombre: "Cartografía básica topográfica (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
         layers: "0"
     },
+
     {
         id: "Relieve",
         nombre: "Relieve (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Relieve/MapServer/WMSServer",
         layers: "0,1"
     },
+
     {
         id: "Geo",
         nombre: "Serie geológica raster (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Serie_Geologico_Raster/MapServer/WMSServer",
         layers: "0,1,2"
     },
+
     {
         id: "Hidro",
         nombre: "Hidrografía (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Hidrografia/MapServer/WMSServer",
         layers: "0"
     },
+
     {
         id: "Patrimonio",
         nombre: "Patrimonio y cultura (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Patrimonio_y_Cultura/MapServer/WMSServer",
         layers: "0,1,2,3,4,5,6"
     },
+
     {
         id: "TopoWMS",
         nombre: "Cartografía básica topográfica (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
         layers: "0"
     }
+
 ];
 
 // ==========================================
@@ -585,18 +552,22 @@ function estadoGeneral(texto) {
 }
 
 function estadoCapa(id, texto, error = false) {
+
     const elemento = document.getElementById("e" + id);
+
     elemento.textContent = texto;
     elemento.classList.toggle("error", error);
 }
 
 function opacidad(id) {
+
     return Number(
         document.getElementById("r" + id).value
     ) / 100;
 }
 
 function nombrePunto(entidad) {
+
     const campos = [
         "Cueva",
         "Nombre",
@@ -606,10 +577,13 @@ function nombrePunto(entidad) {
     ];
 
     if (entidad.properties) {
+
         for (const campo of campos) {
+
             const p = entidad.properties[campo];
 
             if (p && p.getValue) {
+
                 const v = p.getValue();
 
                 if (
@@ -627,17 +601,21 @@ function nombrePunto(entidad) {
 }
 
 // ==========================================
-// CONECTAR UN SERVICIO WMS
+// CONECTAR SERVICIO WMS
 // ==========================================
 
 async function cargarWMS(servicio) {
+
     estadoCapa(servicio.id, "Conectando…");
 
     try {
+
         const proveedor =
             new Cesium.WebMapServiceImageryProvider({
+
                 url: servicio.url,
                 layers: servicio.layers,
+
                 parameters: {
                     service: "WMS",
                     version: "1.1.1",
@@ -651,9 +629,7 @@ async function cargarWMS(servicio) {
         await proveedor.readyPromise;
 
         const capa =
-            viewer.imageryLayers.addImageryProvider(
-                proveedor
-            );
+            viewer.imageryLayers.addImageryProvider(proveedor);
 
         capa.show =
             document.getElementById(
@@ -673,26 +649,21 @@ async function cargarWMS(servicio) {
         document.getElementById(
             "r" + servicio.id
         ).addEventListener("input", e => {
-            capa.alpha =
-                Number(e.target.value) / 100;
+
+            capa.alpha = Number(e.target.value) / 100;
 
             document.getElementById(
                 "v" + servicio.id
             ).textContent = e.target.value + " %";
         });
 
-        estadoCapa(
-            servicio.id,
-            "Servicio conectado"
-        );
+        estadoCapa(servicio.id, "Servicio conectado");
 
         return true;
 
     } catch (error) {
-        console.error(
-            "Error WMS " + servicio.nombre,
-            error
-        );
+
+        console.error("Error WMS " + servicio.nombre, error);
 
         estadoCapa(
             servicio.id,
@@ -705,21 +676,47 @@ async function cargarWMS(servicio) {
 }
 
 // ==========================================
-// CARGAR CAPA DE PUNTOS ARQUEOLÓGICOS
+// ELIMINAR SIMBOLOGÍA ORIGINAL DEL GEOJSON
+// ==========================================
+
+function limpiarSimbolosOriginales(entidad) {
+
+    // Ocultar billboard original
+    if (entidad.billboard) {
+        entidad.billboard.show = false;
+    }
+
+    // Eliminar completamente billboard original
+    entidad.billboard = undefined;
+
+    // Eliminar etiquetas originales
+    entidad.label = undefined;
+
+    // Eliminar símbolos de modelo, si los hubiera
+    entidad.model = undefined;
+
+    // Eliminar puntos originales
+    entidad.point = undefined;
+}
+
+// ==========================================
+// CARGAR CUEVAS Y YACIMIENTOS
 // ==========================================
 
 async function cargarCuevas() {
+
     estadoCapa("Cuevas", "Cargando…");
 
     const recurso =
-        await Cesium.IonResource.fromAssetId(
-            ID_CUEVAS
-        );
+        await Cesium.IonResource.fromAssetId(ID_CUEVAS);
 
     cuevas = await Cesium.GeoJsonDataSource.load(
         recurso,
         {
-            clampToGround: true
+            clampToGround: true,
+            markerSize: 0,
+            markerSymbol: "",
+            markerColor: Cesium.Color.YELLOW
         }
     );
 
@@ -728,56 +725,69 @@ async function cargarCuevas() {
     let total = 0;
 
     for (const entidad of cuevas.entities.values) {
+
         if (!entidad.position) continue;
 
         total++;
 
         entidad.name = nombrePunto(entidad);
 
+        // ELIMINAR TODOS LOS SÍMBOLOS ORIGINALES
+        limpiarSimbolosOriginales(entidad);
+
+        // CREAR EXCLUSIVAMENTE EL PUNTO AMARILLO
         entidad.point = new Cesium.PointGraphics({
+
             pixelSize: 8,
+
             color: Cesium.Color.YELLOW,
+
             outlineColor: Cesium.Color.BLACK,
+
             outlineWidth: 1,
+
             disableDepthTestDistance:
                 Number.POSITIVE_INFINITY
         });
-    // Eliminar los marcadores azules originales de Cesium
-entidad.billboard = undefined;
-	}
+    }
 
-    document.getElementById(
-        "chkCuevas"
-    ).addEventListener("change", e => {
-        cuevas.show = e.target.checked;
-    });
+    // Visibilidad de la capa
+    document.getElementById("chkCuevas")
+        .addEventListener("change", e => {
+            cuevas.show = e.target.checked;
+        });
 
-    document.getElementById(
-        "rCuevas"
-    ).addEventListener("input", e => {
-        const a = Number(e.target.value) / 100;
+    // Control de opacidad
+    document.getElementById("rCuevas")
+        .addEventListener("input", e => {
 
-        document.getElementById(
-            "vCuevas"
-        ).textContent = e.target.value + " %";
+            const a = Number(e.target.value) / 100;
 
-        for (const entidad of cuevas.entities.values) {
-            if (entidad.point) {
-                entidad.point.color =
-                    Cesium.Color.YELLOW.withAlpha(a);
-           // }
+            document.getElementById("vCuevas")
+                .textContent = e.target.value + " %";
 
-            //if (entidad.billboard) {
-              //  entidad.billboard.color =
-                //    Cesium.Color.WHITE.withAlpha(a);
-           // }
-        }
-    });
+            for (const entidad of cuevas.entities.values) {
+
+                if (entidad.point) {
+
+                    entidad.point.color =
+                        Cesium.Color.YELLOW.withAlpha(a);
+                }
+
+                // Segunda comprobación de seguridad
+                if (entidad.billboard) {
+                    entidad.billboard.show = false;
+                }
+            }
+        });
 
     estadoCapa(
         "Cuevas",
         total + " entidades con posición"
     );
+
+    // Solicitar actualización de pantalla
+    viewer.scene.requestRender();
 }
 
 // ==========================================
@@ -785,12 +795,11 @@ entidad.billboard = undefined;
 // ==========================================
 
 async function cargarLimites() {
+
     estadoCapa("Limites", "Cargando…");
 
     const recurso =
-        await Cesium.IonResource.fromAssetId(
-            ID_LIMITES
-        );
+        await Cesium.IonResource.fromAssetId(ID_LIMITES);
 
     limites = await Cesium.GeoJsonDataSource.load(
         recurso,
@@ -802,56 +811,56 @@ async function cargarLimites() {
     viewer.dataSources.add(limites);
 
     for (const entidad of limites.entities.values) {
+
         if (entidad.polyline) {
+
             entidad.polyline.width = 3;
-            entidad.polyline.material =
-                Cesium.Color.RED;
+            entidad.polyline.material = Cesium.Color.RED;
             entidad.polyline.clampToGround = true;
         }
 
         if (entidad.polygon) {
-            entidad.polygon.material =
-                Cesium.Color.RED;
-            entidad.polygon.outlineColor =
-                Cesium.Color.RED;
+
+            entidad.polygon.material = Cesium.Color.RED;
+            entidad.polygon.outlineColor = Cesium.Color.RED;
         }
     }
 
-    document.getElementById(
-        "chkLimites"
-    ).addEventListener("change", e => {
-        limites.show = e.target.checked;
-    });
+    document.getElementById("chkLimites")
+        .addEventListener("change", e => {
+            limites.show = e.target.checked;
+        });
 
-    document.getElementById(
-        "rLimites"
-    ).addEventListener("input", e => {
-        const a = Number(e.target.value) / 100;
+    document.getElementById("rLimites")
+        .addEventListener("input", e => {
 
-        document.getElementById(
-            "vLimites"
-        ).textContent = e.target.value + " %";
+            const a = Number(e.target.value) / 100;
 
-        for (const entidad of limites.entities.values) {
-            if (entidad.polyline) {
-                entidad.polyline.material =
-                    Cesium.Color.RED.withAlpha(a);
+            document.getElementById("vLimites")
+                .textContent = e.target.value + " %";
+
+            for (const entidad of limites.entities.values) {
+
+                if (entidad.polyline) {
+
+                    entidad.polyline.material =
+                        Cesium.Color.RED.withAlpha(a);
+                }
+
+                if (entidad.polygon) {
+
+                    entidad.polygon.material =
+                        Cesium.Color.RED.withAlpha(a);
+
+                    entidad.polygon.outlineColor =
+                        Cesium.Color.RED.withAlpha(a);
+                }
             }
-
-            if (entidad.polygon) {
-                entidad.polygon.material =
-                    Cesium.Color.RED.withAlpha(a);
-
-                entidad.polygon.outlineColor =
-                    Cesium.Color.RED.withAlpha(a);
-            }
-        }
-    });
+        });
 
     estadoCapa(
         "Limites",
-        limites.entities.values.length +
-        " entidades cargadas"
+        limites.entities.values.length + " entidades cargadas"
     );
 }
 
@@ -860,19 +869,16 @@ async function cargarLimites() {
 // ==========================================
 
 async function iniciar() {
+
     estadoGeneral(
         "Cargando capas. Los controles ya están disponibles."
     );
 
-    // Cada capa se carga independientemente.
-    // Un error no detiene la carga de las demás.
-
     const tareas = [
+
         cargarCuevas().catch(error => {
-            console.error(
-                "Error en los puntos",
-                error
-            );
+
+            console.error("Error en los puntos", error);
 
             estadoCapa(
                 "Cuevas",
@@ -882,10 +888,8 @@ async function iniciar() {
         }),
 
         cargarLimites().catch(error => {
-            console.error(
-                "Error en límites",
-                error
-            );
+
+            console.error("Error en límites", error);
 
             estadoCapa(
                 "Limites",
@@ -895,12 +899,10 @@ async function iniciar() {
         }),
 
         ...servicios.map(s =>
+
             cargarWMS(s).catch(error => {
-                console.error(
-                    "Error de servicio",
-                    s.nombre,
-                    error
-                );
+
+                console.error("Error de servicio", s.nombre, error);
 
                 estadoCapa(
                     s.id,
@@ -916,9 +918,12 @@ async function iniciar() {
     await Promise.allSettled(tareas);
 
     if (cuevas) {
+
         try {
             await viewer.zoomTo(cuevas);
+
         } catch (error) {
+
             console.warn(
                 "No se pudo encuadrar sitespointA",
                 error
@@ -929,6 +934,8 @@ async function iniciar() {
     estadoGeneral(
         "Proceso finalizado. Activa las capas que quieras consultar."
     );
+
+    viewer.scene.requestRender();
 }
 
 iniciar();
