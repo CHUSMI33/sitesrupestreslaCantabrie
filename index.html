@@ -1,168 +1,742 @@
+
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuevas de Cantabria</title>
 
-    <title>Cuevas de Cantabria</title>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Cesium.js"></script>
-
-    <link
-        href="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Widgets/widgets.css"
-        rel="stylesheet">
-
-    <style>
-        html,
-        body,
-        #cesiumContainer {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-			
-		#panel{
-			position:absolute;
-			top:10px;
-			left:10px;
-			z-index:1000;
-			background:white;
-			padding:10px;
+<style>
+html, body, #cesiumContainer {
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+    overflow:hidden;
 }
-			
-			
-        }
-    </style>
 
+#panelCapas {
+    position:absolute;
+    left:12px;
+    right:auto;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:1000;
+    width:300px;
+    max-height:75vh;
+    overflow-y:auto;
+    box-sizing:border-box;
+    padding:11px;
+    color:#fff;
+    background:rgba(25,30,35,.94);
+    border:1px solid #65717c;
+    border-radius:7px;
+    box-shadow:0 3px 12px #0007;
+    font:11px Arial,sans-serif;
+    transition:width .2s ease;
+    max-width:calc(100vw - 12px);
+}
+
+#panelCabecera {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:9px;
+    padding-bottom:7px;
+    border-bottom:1px solid #65717c;
+    cursor:move;
+    user-select:none;
+    touch-action:none;
+}
+
+#panelCabecera h3 {
+    font-size:13px;
+    line-height:1.3;
+    margin:0;
+}
+
+#btnPanel {
+    flex-shrink:0;
+    width:29px;
+    height:27px;
+    padding:0;
+    border:1px solid #65717c;
+    border-radius:5px;
+    color:white;
+    background:#394752;
+    font:bold 18px Arial,sans-serif;
+    cursor:pointer;
+    touch-action:manipulation;
+}
+
+#btnPanel:hover { background:#0879b9; }
+
+#btnPanel:focus-visible {
+    outline:2px solid #8ed0ff;
+    outline-offset:2px;
+}
+
+#panelCapas.minimizado {
+    width:205px;
+    max-height:none;
+    overflow:hidden;
+}
+
+#panelCapas.minimizado #panelCabecera {
+    margin-bottom:0;
+    padding-bottom:0;
+    border-bottom:none;
+}
+
+#panelCapas.minimizado #contenidoCapas {
+    display:none;
+}
+
+#panelCapas.arrastrando {
+    transition:none;
+    opacity:.88;
+}
+
+.grupo { margin:8px 0; }
+
+.cabecera {
+    display:flex;
+    align-items:flex-start;
+    gap:6px;
+    line-height:1.3;
+}
+
+.cabecera input {
+    margin:1px 0 0;
+    flex-shrink:0;
+    accent-color:#55b7ff;
+}
+
+.cabecera label { cursor:pointer; }
+
+.seccion {
+    color:#8ed0ff;
+    font-weight:bold;
+    font-size:10px;
+    margin:10px 0 6px;
+    text-transform:uppercase;
+}
+
+.fila {
+    display:flex;
+    justify-content:space-between;
+    margin:4px 0 2px 21px;
+    font-size:10px;
+}
+
+.valor {
+    color:#8ed0ff;
+    font-weight:bold;
+}
+
+.rango {
+    width:calc(100% - 21px);
+    margin-left:21px;
+    height:13px;
+}
+
+.estado {
+    margin:2px 0 0 21px;
+    font-size:10px;
+    color:#c7d0d8;
+    overflow-wrap:anywhere;
+}
+
+.error { color:#ffaaaa; }
+
+hr {
+    border:0;
+    border-top:1px solid #58616a;
+    margin:9px 0;
+}
+
+#estadoGeneral {
+    margin-top:8px;
+    padding-top:7px;
+    border-top:1px solid #58616a;
+    font-size:10px;
+    line-height:1.4;
+    color:#d4dce3;
+}
+
+@media(max-width:480px) {
+    #panelCapas {
+        left:6px;
+        top:12px;
+        bottom:auto;
+        transform:none;
+        width:min(300px, calc(100% - 12px));
+        max-height:65vh;
+    }
+
+    #panelCapas.minimizado {
+        width:min(205px, calc(100% - 12px));
+    }
+}
+</style>
 </head>
 
 <body>
 
 <div id="cesiumContainer"></div>
 
+<div id="panelCapas">
+
+    <div id="panelCabecera">
+        <h3>Control de capas</h3>
+        <button id="btnPanel" type="button"
+            aria-label="Minimizar panel de capas"
+            aria-expanded="true"
+            title="Minimizar panel">−</button>
+    </div>
+
+    <div id="contenidoCapas">
+
+        <div class="seccion">Datos arqueológicos</div>
+
+        <div class="grupo">
+            <div class="cabecera">
+                <input type="checkbox" id="chkCuevas" checked>
+                <label for="chkCuevas">SitespointA — puntos</label>
+            </div>
+            <div class="fila">
+                <span>Opacidad</span>
+                <span class="valor" id="vCuevas">100 %</span>
+            </div>
+            <input class="rango" type="range" id="rCuevas" min="0" max="100" value="100">
+            <div class="estado" id="eCuevas">Pendiente</div>
+        </div>
+
+        <div class="grupo">
+            <div class="cabecera">
+                <input type="checkbox" id="chkLimites" checked>
+                <label for="chkLimites">Límites territoriales</label>
+            </div>
+            <div class="fila">
+                <span>Opacidad</span>
+                <span class="valor" id="vLimites">100 %</span>
+            </div>
+            <input class="rango" type="range" id="rLimites" min="0" max="100" value="100">
+            <div class="estado" id="eLimites">Pendiente</div>
+        </div>
+
+        <hr>
+
+        <div class="seccion">Cartografía de Cantabria</div>
+
+        <div id="listaServicios">
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkTopo">
+                    <label for="chkTopo">Cartografía básica topográfica (WMTS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vTopo">100 %</span></div>
+                <input class="rango" type="range" id="rTopo" min="0" max="100" value="100">
+                <div class="estado" id="eTopo">Pendiente</div>
+            </div>
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkRelieve">
+                    <label for="chkRelieve">Relieve (WMTS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vRelieve">100 %</span></div>
+                <input class="rango" type="range" id="rRelieve" min="0" max="100" value="100">
+                <div class="estado" id="eRelieve">Pendiente</div>
+            </div>
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkGeo">
+                    <label for="chkGeo">Serie geológica raster (WMTS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vGeo">100 %</span></div>
+                <input class="rango" type="range" id="rGeo" min="0" max="100" value="100">
+                <div class="estado" id="eGeo">Pendiente</div>
+            </div>
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkHidro">
+                    <label for="chkHidro">Hidrografía (WMS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vHidro">100 %</span></div>
+                <input class="rango" type="range" id="rHidro" min="0" max="100" value="100">
+                <div class="estado" id="eHidro">Pendiente</div>
+            </div>
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkPatrimonio">
+                    <label for="chkPatrimonio">Patrimonio y cultura (WMS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vPatrimonio">100 %</span></div>
+                <input class="rango" type="range" id="rPatrimonio" min="0" max="100" value="100">
+                <div class="estado" id="ePatrimonio">Pendiente</div>
+            </div>
+
+            <div class="grupo">
+                <div class="cabecera">
+                    <input type="checkbox" id="chkTopoWMS">
+                    <label for="chkTopoWMS">Cartografía básica topográfica (WMS)</label>
+                </div>
+                <div class="fila"><span>Opacidad</span><span class="valor" id="vTopoWMS">100 %</span></div>
+                <input class="rango" type="range" id="rTopoWMS" min="0" max="100" value="100">
+                <div class="estado" id="eTopoWMS">Pendiente</div>
+            </div>
+
+        </div>
+
+        <div id="estadoGeneral">Preparando visor…</div>
+    </div>
+</div>
+
 <script>
+"use strict";
 
- Cesium.Ion.defaultAccessToken =  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';;
+// ==========================================
+// PANEL
+// ==========================================
 
+const panelCapas = document.getElementById("panelCapas");
+const btnPanel = document.getElementById("btnPanel");
 
-const viewer = new Cesium.Viewer('cesiumContainer', {
-    terrain: Cesium.Terrain.fromWorldTerrain()
-	
-	
+btnPanel.addEventListener("click", function() {
+    const minimizado = panelCapas.classList.toggle("minimizado");
+
+    btnPanel.textContent = minimizado ? "+" : "−";
+    btnPanel.setAttribute("aria-expanded", String(!minimizado));
+    btnPanel.setAttribute("aria-label",
+        minimizado ? "Maximizar panel de capas" : "Minimizar panel de capas");
+    btnPanel.title = minimizado ? "Maximizar panel" : "Minimizar panel";
 });
-// WMS Cartografía Básica de Cantabria
 
-viewer.imageryLayers.addImageryProvider(
+// ==========================================
+// PANEL MOVIBLE
+// ==========================================
 
-    new Cesium.WebMapServiceImageryProvider({
+(function hacerPanelMovible() {
 
+    const panel = document.getElementById("panelCapas");
+    const cabecera = document.getElementById("panelCabecera");
+    const boton = document.getElementById("btnPanel");
+
+    let moviendo = false;
+    let inicioX = 0, inicioY = 0, panelX = 0, panelY = 0;
+
+    cabecera.addEventListener("pointerdown", function(e) {
+
+        if (e.target === boton || boton.contains(e.target)) return;
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+
+        const rect = panel.getBoundingClientRect();
+
+        panel.style.left = rect.left + "px";
+        panel.style.top = rect.top + "px";
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
+        panel.style.transform = "none";
+
+        inicioX = e.clientX;
+        inicioY = e.clientY;
+        panelX = rect.left;
+        panelY = rect.top;
+        moviendo = true;
+
+        cabecera.setPointerCapture(e.pointerId);
+        panel.classList.add("arrastrando");
+        e.preventDefault();
+    });
+
+    cabecera.addEventListener("pointermove", function(e) {
+
+        if (!moviendo) return;
+
+        const margen = 6;
+        const rect = panel.getBoundingClientRect();
+
+        let x = panelX + e.clientX - inicioX;
+        let y = panelY + e.clientY - inicioY;
+
+        x = Math.max(margen, Math.min(x, window.innerWidth - rect.width - margen));
+        y = Math.max(margen, Math.min(y, window.innerHeight - rect.height - margen));
+
+        panel.style.left = x + "px";
+        panel.style.top = y + "px";
+    });
+
+    function finalizar() {
+        moviendo = false;
+        panel.classList.remove("arrastrando");
+    }
+
+    cabecera.addEventListener("pointerup", finalizar);
+    cabecera.addEventListener("pointercancel", finalizar);
+
+})();
+
+// ==========================================
+// CESIUM
+// ==========================================
+
+// PEGA AQUÍ TU TOKEN ORIGINAL O UNO NUEVO VÁLIDO
+
+Cesium.Ion.defaultAccessToken = "PEGA_AQUI_TU_TOKEN_VALIDO";
+
+const ID_CUEVAS = 6088210;
+const ID_LIMITES = 6087242;
+
+const viewer = new Cesium.Viewer("cesiumContainer", {
+    terrain: Cesium.Terrain.fromWorldTerrain(),
+    animation: false,
+    timeline: false,
+    geocoder: true,
+    homeButton: true,
+    sceneModePicker: true,
+    baseLayerPicker: true,
+    navigationHelpButton: true
+});
+
+let cuevas = null;
+let limites = null;
+
+const capasWMS = {};
+
+// ==========================================
+// SERVICIOS WMS
+// ==========================================
+
+const servicios = [
+    {
+        id: "Topo",
+        nombre: "Cartografía básica topográfica (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
+        layers: "0"
+    },
+    {
+        id: "Relieve",
+        nombre: "Relieve (WMTS)",
+        url: "https://geoservicios.cantabria.es/inspire/services/Relieve/MapServer/WMSServer",
+        layers: "0,1"
+    },
+    {
+        id: "Geo",
+        nombre: "Serie geológica raster (WMTS)",
+        url: "https://geoservicios.cantabria.es/inspire/services/Serie_Geologico_Raster/MapServer/WMSServer",
+        layers: "0,1,2"
+    },
+    {
+        id: "Hidro",
+        nombre: "Hidrografía (WMS)",
+        url: "https://geoservicios.cantabria.es/inspire/services/Hidrografia/MapServer/WMSServer",
+        layers: "0"
+    },
+    {
+        id: "Patrimonio",
+        nombre: "Patrimonio y cultura (WMS)",
+        url: "https://geoservicios.cantabria.es/inspire/services/Patrimonio_y_Cultura/MapServer/WMSServer",
+        layers: "0,1,2,3,4,5,6"
+    },
+    {
+        id: "TopoWMS",
+        nombre: "Cartografía básica topográfica (WMS)",
+        url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
+        layers: "0"
+    }
+];
 
-        layers: "0",
+// ==========================================
+// UTILIDADES
+// ==========================================
 
-        parameters: {
-            transparent: true,
-            format: "image/png"
+function estadoGeneral(texto) {
+    document.getElementById("estadoGeneral").textContent = texto;
+}
+
+function estadoCapa(id, texto, error = false) {
+    const elemento = document.getElementById("e" + id);
+    elemento.textContent = texto;
+    elemento.classList.toggle("error", error);
+}
+
+function opacidad(id) {
+    return Number(document.getElementById("r" + id).value) / 100;
+}
+
+function nombrePunto(entidad) {
+
+    const campos = ["Cueva", "Nombre", "nombre", "Name", "name"];
+
+    if (entidad.properties) {
+        for (const campo of campos) {
+            const p = entidad.properties[campo];
+
+            if (p && p.getValue) {
+                const v = p.getValue();
+
+                if (v !== undefined && v !== null && v !== "") {
+                    return String(v);
+                }
+            }
         }
+    }
 
-    })
+    return entidad.name || "Punto";
+}
 
-);
-async function cargarDatos() {
+// ==========================================
+// CARGAR WMS
+// ==========================================
+
+async function cargarWMS(servicio) {
+
+    estadoCapa(servicio.id, "Conectando…");
 
     try {
 
-        console.log("Cargando cuevas...");
-
-        const resourceCuevas =
-            await Cesium.IonResource.fromAssetId(6088210);
-
-        const cuevas =
-            await Cesium.GeoJsonDataSource.load(resourceCuevas);
-
-        await viewer.dataSources.add(cuevas);
-
-        console.log(
-            "Cuevas:",
-            cuevas.entities.values.length
-        );
-
-        const entidadesCuevas =
-            cuevas.entities.values;
-
-        for (let i = 0; i < entidadesCuevas.length; i++) {
-
-            const entidad = entidadesCuevas[i];
-
-            if (entidad.properties &&
-                entidad.properties.Cueva) {
-
-                entidad.name =
-                    entidad.properties.Cueva.getValue();
+        const proveedor = new Cesium.WebMapServiceImageryProvider({
+            url: servicio.url,
+            layers: servicio.layers,
+            parameters: {
+                service: "WMS",
+                version: "1.1.1",
+                request: "GetMap",
+                styles: "",
+                format: "image/png",
+                transparent: true
             }
-        }
+        });
 
+        await proveedor.readyPromise;
 
-        console.log("Cargando límites...");
+        const capa = viewer.imageryLayers.addImageryProvider(proveedor);
 
-        const resourceLimites =
-            await Cesium.IonResource.fromAssetId(6087242);
+        capa.show = document.getElementById("chk" + servicio.id).checked;
+        capa.alpha = opacidad(servicio.id);
 
-        const limites =
-            await Cesium.GeoJsonDataSource.load(resourceLimites);
+        capasWMS[servicio.id] = capa;
 
-        await viewer.dataSources.add(limites);
+        document.getElementById("chk" + servicio.id)
+            .addEventListener("change", e => {
+                capa.show = e.target.checked;
+            });
 
-        console.log(
-            "Limites:",
-            limites.entities.values.length
-        );
+        document.getElementById("r" + servicio.id)
+            .addEventListener("input", e => {
+                capa.alpha = Number(e.target.value) / 100;
+                document.getElementById("v" + servicio.id).textContent =
+                    e.target.value + " %";
+            });
 
-   const entidadesLimites = limites.entities.values;
+        estadoCapa(servicio.id, "Servicio conectado");
+        return true;
 
-		for (let i = 0; i < entidadesLimites.length; i++) {
+    } catch (error) {
 
-			const entidad = entidadesLimites[i];
-
-				if (entidad.polyline) {
-
-        entidad.polyline.width = 4;
-
-        entidad.polyline.material =
-            Cesium.Color.RED;
-
-        entidad.polyline.clampToGround = true;
-			}
-		}
-
-     await viewer.zoomTo(cuevas);
-
-        console.log("Todo cargado correctamente");
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
+        console.error("Error WMS " + servicio.nombre, error);
+        estadoCapa(servicio.id, "Error: revisa F12 / Consola", true);
+        return false;
     }
 }
 
-cargarDatos();
+// ==========================================
+// CARGAR PUNTOS ARQUEOLÓGICOS
+// ==========================================
+
+async function cargarCuevas() {
+
+    estadoCapa("Cuevas", "Cargando…");
+
+    const recurso = await Cesium.IonResource.fromAssetId(ID_CUEVAS);
+
+    // IMPORTANTE: mantenemos la carga GeoJSON original.
+    // No modificamos markerSize ni markerColor.
+
+    cuevas = await Cesium.GeoJsonDataSource.load(recurso, {
+        clampToGround: true
+    });
+
+    viewer.dataSources.add(cuevas);
+
+    let total = 0;
+
+    for (const entidad of cuevas.entities.values) {
+
+        if (!entidad.position) continue;
+
+        total++;
+
+        entidad.name = nombrePunto(entidad);
+
+        // ÚNICO CAMBIO: ocultar el marcador azul original.
+        // No eliminar la entidad ni sus propiedades.
+
+        if (entidad.billboard) {
+            entidad.billboard.show = false;
+        }
+
+        // Ocultar etiquetas originales, si existen.
+        if (entidad.label) {
+            entidad.label.show = false;
+        }
+
+        // Dibujar el punto amarillo.
+        entidad.point = new Cesium.PointGraphics({
+            pixelSize: 8,
+            color: Cesium.Color.YELLOW,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 1,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY
+        });
+    }
+
+    document.getElementById("chkCuevas")
+        .addEventListener("change", e => {
+            cuevas.show = e.target.checked;
+        });
+
+    document.getElementById("rCuevas")
+        .addEventListener("input", e => {
+
+            const a = Number(e.target.value) / 100;
+
+            document.getElementById("vCuevas").textContent =
+                e.target.value + " %";
+
+            for (const entidad of cuevas.entities.values) {
+
+                if (entidad.point) {
+                    entidad.point.color =
+                        Cesium.Color.YELLOW.withAlpha(a);
+                }
+            }
+        });
+
+    estadoCapa("Cuevas", total + " entidades con posición");
+}
+
+// ==========================================
+// CARGAR LÍMITES TERRITORIALES
+// ==========================================
+
+async function cargarLimites() {
+
+    estadoCapa("Limites", "Cargando…");
+
+    const recurso = await Cesium.IonResource.fromAssetId(ID_LIMITES);
+
+    limites = await Cesium.GeoJsonDataSource.load(recurso, {
+        clampToGround: true
+    });
+
+    viewer.dataSources.add(limites);
+
+    for (const entidad of limites.entities.values) {
+
+        if (entidad.polyline) {
+            entidad.polyline.width = 3;
+            entidad.polyline.material = Cesium.Color.RED;
+            entidad.polyline.clampToGround = true;
+        }
+
+        if (entidad.polygon) {
+            entidad.polygon.material = Cesium.Color.RED;
+            entidad.polygon.outlineColor = Cesium.Color.RED;
+        }
+    }
+
+    document.getElementById("chkLimites")
+        .addEventListener("change", e => {
+            limites.show = e.target.checked;
+        });
+
+    document.getElementById("rLimites")
+        .addEventListener("input", e => {
+
+            const a = Number(e.target.value) / 100;
+
+            document.getElementById("vLimites").textContent =
+                e.target.value + " %";
+
+            for (const entidad of limites.entities.values) {
+
+                if (entidad.polyline) {
+                    entidad.polyline.material =
+                        Cesium.Color.RED.withAlpha(a);
+                }
+
+                if (entidad.polygon) {
+                    entidad.polygon.material =
+                        Cesium.Color.RED.withAlpha(a);
+
+                    entidad.polygon.outlineColor =
+                        Cesium.Color.RED.withAlpha(a);
+                }
+            }
+        });
+
+    estadoCapa(
+        "Limites",
+        limites.entities.values.length + " entidades cargadas"
+    );
+}
+
+// ==========================================
+// INICIAR VISOR
+// ==========================================
+
+async function iniciar() {
+
+    estadoGeneral("Cargando capas. Los controles ya están disponibles.");
+
+    const tareas = [
+
+        cargarCuevas().catch(error => {
+            console.error("Error en los puntos", error);
+            estadoCapa("Cuevas", "Error al cargar puntos", true);
+        }),
+
+        cargarLimites().catch(error => {
+            console.error("Error en límites", error);
+            estadoCapa("Limites", "Error al cargar límites", true);
+        }),
+
+        ...servicios.map(s =>
+            cargarWMS(s).catch(error => {
+                console.error("Error de servicio", s.nombre, error);
+                estadoCapa(s.id, "Error de conexión", true);
+                return false;
+            })
+        )
+    ];
+
+    await Promise.allSettled(tareas);
+
+    if (cuevas) {
+        try {
+            await viewer.zoomTo(cuevas);
+        } catch (error) {
+            console.warn("No se pudo encuadrar sitespointA", error);
+        }
+    }
+
+    estadoGeneral(
+        "Proceso finalizado. Activa las capas que quieras consultar."
+    );
+}
+
+iniciar();
 
 </script>
-<div id="panel">
-    Transparencia
-    <input
-        type="range"
-        min="0"
-        max="100"
-        value="60"
-        id="opacidad">
-</div>
-
 </body>
-
 </html>
