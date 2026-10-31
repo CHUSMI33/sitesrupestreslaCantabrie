@@ -257,9 +257,9 @@ hr {
 
         <hr>
 
-        <div class="seccion">Ortofotografía MDT</div>
+        <div class="seccion">Ortofotografía</div>
 
-        
+       
         <!-- ORTOFOTOGRAFÍA DESACTIVADA INICIALMENTE -->
 
         <div class="grupo">
@@ -643,53 +643,31 @@ function nombrePunto(entidad) {
     return entidad.name || "Punto";
 }
 
+
 // ==========================================
 // CARGAR TERRENO MDT
+// SIN CONTROL EN LA LEYENDA
 // ==========================================
 
 async function cargarTerreno() {
-
-    estadoCapa("Terreno", "Conectando con TMDCANTABRIA…");
 
     try {
 
         proveedorTerrenoMDT =
             await Cesium.CesiumTerrainProvider.fromIonAssetId(ID_TERRENO);
 
+        // El MDT permanece activo como terreno del visor.
         viewer.terrainProvider = proveedorTerrenoMDT;
 
         viewer.scene.globe.depthTestAgainstTerrain = true;
 
-        document.getElementById("chkTerreno").addEventListener("change", e => {
-
-            // Activar o desactivar el MDT.
-            viewer.terrainProvider = e.target.checked
-                ? proveedorTerrenoMDT
-                : proveedorTerrenoPlano;
-
-            estadoCapa(
-                "Terreno",
-                e.target.checked
-                    ? "MDT TMDCANTABRIA activo"
-                    : "Relieve desactivado (superficie plana)"
-            );
-
-            viewer.scene.requestRender();
-        });
-
-        estadoCapa("Terreno", "MDT TMDCANTABRIA conectado");
+        console.log("MDT TMDCANTABRIA conectado correctamente.");
 
         return true;
 
     } catch (error) {
 
         console.error("Error al cargar el MDT TMDCANTABRIA:", error);
-
-        estadoCapa(
-            "Terreno",
-            "Error al cargar el MDT; comprueba Asset ID, permisos y token",
-            true
-        );
 
         return false;
     }
