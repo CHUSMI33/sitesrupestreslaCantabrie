@@ -259,16 +259,7 @@ hr {
 
         <div class="seccion">Modelo digital y ortofotografía</div>
 
-        <!-- MDT SIN EXAGERACIÓN VERTICAL -->
-
-        <div class="grupo">
-            <div class="cabecera">
-                <input type="checkbox" id="chkTerreno" checked>
-                <label for="chkTerreno">MDT</label>
-            </div>
-            <div class="estado" id="eTerreno">Pendiente de conexión</div>
-        </div>
-
+        
         <!-- ORTOFOTOGRAFÍA DESACTIVADA INICIALMENTE -->
 
         <div class="grupo">
@@ -962,7 +953,7 @@ async function cargarCuevas() {
             if (cartografica && Number.isFinite(cartografica.height)) {
 
                 const alturaTerreno = cartografica.height;
-                const margenVisual = 0.35;
+                const margenVisual = 0.60;
 
                 const posicionBase = Cesium.Cartesian3.fromRadians(
                     cartografica.longitude,
