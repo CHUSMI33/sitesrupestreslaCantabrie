@@ -728,7 +728,7 @@ async function cargarOrtofoto() {
             viewer.scene.requestRender();
         });
 
-        estadoCapa("Orto", "Conectada; desactivada inicialmente");
+        estadoCapa("Orto", "Conectada");
 
         return true;
 
@@ -1027,9 +1027,9 @@ async function cargarCuevas() {
 
         estadoCapa(
             "Cuevas",
-            total + " yacimientos; " +
-            cotasCalculadas + " cotas y " +
-            etiquetasCreadas + " rótulos con línea guía"
+            total + " yacimientos y " +
+            cotasCalculadas + "cotas  "
+           
         );
 
     } catch (error) {
