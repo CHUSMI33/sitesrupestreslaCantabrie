@@ -742,7 +742,9 @@ async function cargarCuevas() {
             disableDepthTestDistance:
                 Number.POSITIVE_INFINITY
         });
-    }
+    // Eliminar los marcadores azules originales de Cesium
+entidad.billboard = undefined;
+	}
 
     document.getElementById(
         "chkCuevas"
@@ -763,12 +765,12 @@ async function cargarCuevas() {
             if (entidad.point) {
                 entidad.point.color =
                     Cesium.Color.YELLOW.withAlpha(a);
-            }
+           // }
 
-            if (entidad.billboard) {
-                entidad.billboard.color =
-                    Cesium.Color.WHITE.withAlpha(a);
-            }
+            //if (entidad.billboard) {
+              //  entidad.billboard.color =
+                //    Cesium.Color.WHITE.withAlpha(a);
+           // }
         }
     });
 
