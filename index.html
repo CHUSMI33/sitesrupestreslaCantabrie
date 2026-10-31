@@ -470,9 +470,7 @@ btnPanel.addEventListener("click", function () {
 
 // PEGA AQUÍ TU NUEVO TOKEN DE CESIUM ION
 
-    Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
-
-    
+Cesium.Ion.defaultAccessToken = 'PEGA_AQUI_TU_TOKEN_NUEVO_DE_CESIUM_ION';
 
     
 
@@ -787,31 +785,74 @@ async function cargarCuevas() {
         );
 
         let cotasCalculadas = 0;
+        let etiquetasCreadas = 0;
 
         for (let i = 0; i < entidadesConPosicion.length; i++) {
             const entidad = entidadesConPosicion[i];
             const cartografica = posicionesCartograficas[i];
 
             if (cartografica && Number.isFinite(cartografica.height)) {
-                // Un pequeño margen evita que el centro del píxel quede
-                // enterrado por el propio test de profundidad del terreno.
-                const margenVisual = 0.25;
+                // Altura muestreada del terreno para este yacimiento.
+                const alturaTerreno = cartografica.height;
+                const margenVisual = 0.35;
 
-                entidad.position = Cesium.Cartesian3.fromRadians(
+                const posicionBase = Cesium.Cartesian3.fromRadians(
                     cartografica.longitude,
                     cartografica.latitude,
-                    cartografica.height + margenVisual
+                    alturaTerreno + margenVisual
                 );
 
-                // La altura ya está incorporada a la coordenada cartesiana.
+                entidad.position = posicionBase;
                 entidad.point.heightReference = Cesium.HeightReference.NONE;
                 cotasCalculadas++;
+
+                // Crear un extremo superior para el rótulo y una línea guía.
+                // La línea une la ubicación real del yacimiento con su nombre.
+                const alturaRotulo = alturaTerreno + 22;
+                const posicionRotulo = Cesium.Cartesian3.fromRadians(
+                    cartografica.longitude,
+                    cartografica.latitude,
+                    alturaRotulo
+                );
+
+                cuevas.entities.add({
+                    id: "rotulo_yacimiento_" + entidad.id,
+                    name: "Rótulo: " + entidad.name,
+                    position: posicionRotulo,
+                    polyline: {
+                        positions: [posicionBase, posicionRotulo],
+                        width: 2,
+                        material: Cesium.Color.YELLOW,
+                        clampToGround: false,
+                        arcType: Cesium.ArcType.NONE,
+                        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 60000)
+                    },
+                    label: {
+                        text: entidad.name,
+                        font: "13px Arial",
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        fillColor: Cesium.Color.WHITE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 3,
+                        showBackground: true,
+                        backgroundColor: Cesium.Color.BLACK.withAlpha(0.65),
+                        backgroundPadding: new Cesium.Cartesian2(5, 3),
+                        pixelOffset: new Cesium.Cartesian2(8, -3),
+                        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+                        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+                        disableDepthTestDistance: 0,
+                        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 60000),
+                        scaleByDistance: new Cesium.NearFarScalar(1000, 1.0, 60000, 0.75)
+                    }
+                });
+
+                etiquetasCreadas++;
             }
         }
 
         estadoCapa(
             "Cuevas",
-            total + " entidades; " + cotasCalculadas + " cotas de terreno calculadas"
+            total + " yacimientos; " + cotasCalculadas + " cotas y " + etiquetasCreadas + " rótulos con línea guía"
         );
 
     } catch (error) {
@@ -848,11 +889,6 @@ async function cargarCuevas() {
                 }
             }
         });
-
-    estadoCapa(
-        "Cuevas",
-        total + " entidades con posición"
-    );
 
     // Solicitar actualización de pantalla
     viewer.scene.requestRender();
