@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -153,6 +154,13 @@ html, body, #cesiumContainer {
     height: 13px;
 }
 
+/* DESLIZADOR DESHABILITADO */
+
+.rango:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
 .estado {
     margin: 2px 0 0 21px;
     font-size: 10px;
@@ -251,31 +259,32 @@ hr {
 
         <div class="seccion">Modelo digital y ortofotografía</div>
 
+        <!-- MDT SIN EXAGERACIÓN VERTICAL -->
+
         <div class="grupo">
             <div class="cabecera">
                 <input type="checkbox" id="chkTerreno" checked>
                 <label for="chkTerreno">MDT</label>
             </div>
-            <div class="fila">
-                <span>Exageración vertical</span>
-                <span class="valor" id="vTerreno">100 %</span>
-            </div>
-            <input class="rango" type="range" id="rTerreno"
-                   min="100" max="300" value="100" step="10">
             <div class="estado" id="eTerreno">Pendiente de conexión</div>
         </div>
 
+        <!-- ORTOFOTOGRAFÍA DESACTIVADA INICIALMENTE -->
+
         <div class="grupo">
             <div class="cabecera">
-                <input type="checkbox" id="chkOrto" checked>
+                <input type="checkbox" id="chkOrto">
                 <label for="chkOrto">Ortofotografía</label>
             </div>
+
             <div class="fila">
                 <span>Opacidad</span>
                 <span class="valor" id="vOrto">100 %</span>
             </div>
+
             <input class="rango" type="range" id="rOrto"
-                   min="0" max="100" value="100">
+                   min="0" max="100" value="100" disabled>
+
             <div class="estado" id="eOrto">Pendiente de conexión</div>
         </div>
 
@@ -500,13 +509,11 @@ btnPanel.addEventListener("click", function () {
 // CONFIGURACIÓN CESIUM
 // ==========================================
 
-// PEGA AQUÍ TU NUEVO TOKEN DE CESIUM ION
+// PEGA AQUÍ TU TOKEN DE CESIUM ION.
+// No publiques el token en repositorios o páginas
+// sin configurar previamente sus restricciones.
 
-Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
-
-    
-
-    
+ Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
 
 const ID_CUEVAS = 6088210;
 const ID_LIMITES = 6087242;
@@ -527,7 +534,6 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 });
 
 // Hacer que los elementos 3D respeten la profundidad del terreno.
-// Evita que los marcadores se dibujen por delante de las laderas.
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
 let cuevas = null;
@@ -647,20 +653,25 @@ function nombrePunto(entidad) {
 }
 
 // ==========================================
-// CONECTAR SERVICIO WMS
+// CARGAR TERRENO MDT
+// ==========================================
+
 async function cargarTerreno() {
+
     estadoCapa("Terreno", "Conectando con TMDCANTABRIA…");
 
     try {
+
         proveedorTerrenoMDT =
             await Cesium.CesiumTerrainProvider.fromIonAssetId(ID_TERRENO);
 
         viewer.terrainProvider = proveedorTerrenoMDT;
+
         viewer.scene.globe.depthTestAgainstTerrain = true;
 
         document.getElementById("chkTerreno").addEventListener("change", e => {
-            // La geometría del terreno no tiene opacidad. Se puede activar
-            // o desactivar sustituyéndola por una superficie elipsoidal.
+
+            // Activar o desactivar el MDT.
             viewer.terrainProvider = e.target.checked
                 ? proveedorTerrenoMDT
                 : proveedorTerrenoPlano;
@@ -671,70 +682,100 @@ async function cargarTerreno() {
                     ? "MDT TMDCANTABRIA activo"
                     : "Relieve desactivado (superficie plana)"
             );
-            viewer.scene.requestRender();
-        });
 
-        // En un MDT, el control equivalente útil es la exageración vertical.
-        document.getElementById("rTerreno").addEventListener("input", e => {
-            const porcentaje = Number(e.target.value);
-            viewer.scene.verticalExaggeration = porcentaje / 100;
-            document.getElementById("vTerreno").textContent =
-                porcentaje + " %";
             viewer.scene.requestRender();
         });
 
         estadoCapa("Terreno", "MDT TMDCANTABRIA conectado");
+
         return true;
 
     } catch (error) {
+
         console.error("Error al cargar el MDT TMDCANTABRIA:", error);
+
         estadoCapa(
             "Terreno",
             "Error al cargar el MDT; comprueba Asset ID, permisos y token",
             true
         );
+
         return false;
     }
 }
 
+// ==========================================
+// CARGAR ORTOFOTOGRAFÍA
+// DESACTIVADA INICIALMENTE
+// ==========================================
 
 async function cargarOrtofoto() {
+
     estadoCapa("Orto", "Conectando con la ortofotografía…");
 
+    const chkOrto = document.getElementById("chkOrto");
+    const rOrto = document.getElementById("rOrto");
+    const vOrto = document.getElementById("vOrto");
+
     try {
+
         const proveedor =
             await Cesium.IonImageryProvider.fromAssetId(ID_ORTO);
 
-        capaOrtofoto = viewer.imageryLayers.addImageryProvider(proveedor);
-        capaOrtofoto.show = document.getElementById("chkOrto").checked;
-        capaOrtofoto.alpha = opacidad("Orto");
+        capaOrtofoto =
+            viewer.imageryLayers.addImageryProvider(proveedor);
 
-        document.getElementById("chkOrto").addEventListener("change", e => {
+        // ORTOFOTOGRAFÍA DESACTIVADA AL INICIAR.
+        capaOrtofoto.show = false;
+
+        // Opacidad inicial del 100 %.
+        capaOrtofoto.alpha = 1;
+
+        chkOrto.checked = false;
+        rOrto.value = 100;
+        rOrto.disabled = true;
+        vOrto.textContent = "100 %";
+
+        // ACTIVAR / DESACTIVAR ORTOFOTOGRAFÍA.
+        chkOrto.addEventListener("change", e => {
+
             capaOrtofoto.show = e.target.checked;
+
+            // Habilitar el deslizador solamente cuando esté activada.
+            rOrto.disabled = !e.target.checked;
+
             viewer.scene.requestRender();
         });
 
-        document.getElementById("rOrto").addEventListener("input", e => {
+        // CONTROL DE OPACIDAD.
+        rOrto.addEventListener("input", e => {
+
             const valor = Number(e.target.value);
+
             capaOrtofoto.alpha = valor / 100;
-            document.getElementById("vOrto").textContent = valor + " %";
+
+            vOrto.textContent = valor + " %";
+
             viewer.scene.requestRender();
         });
 
-        estadoCapa("Orto", "Ortofotografía conectada");
+        estadoCapa("Orto", "Conectada; desactivada inicialmente");
+
         return true;
 
     } catch (error) {
+
         console.error("Error al cargar la ortofotografía:", error);
+
         estadoCapa(
             "Orto",
             "Error al cargar la ortofotografía; comprueba Asset ID y token",
             true
         );
+
         return false;
     }
 }
-
 
 // ==========================================
 // CONECTAR SERVICIO WMS
@@ -779,7 +820,9 @@ async function cargarWMS(servicio) {
         document.getElementById(
             "chk" + servicio.id
         ).addEventListener("change", e => {
+
             capa.show = e.target.checked;
+            viewer.scene.requestRender();
         });
 
         document.getElementById(
@@ -791,6 +834,8 @@ async function cargarWMS(servicio) {
             document.getElementById(
                 "v" + servicio.id
             ).textContent = e.target.value + " %";
+
+            viewer.scene.requestRender();
         });
 
         estadoCapa(servicio.id, "Servicio conectado");
@@ -817,21 +862,13 @@ async function cargarWMS(servicio) {
 
 function limpiarSimbolosOriginales(entidad) {
 
-    // Ocultar billboard original
     if (entidad.billboard) {
         entidad.billboard.show = false;
     }
 
-    // Eliminar completamente billboard original
     entidad.billboard = undefined;
-
-    // Eliminar etiquetas originales
     entidad.label = undefined;
-
-    // Eliminar símbolos de modelo, si los hubiera
     entidad.model = undefined;
-
-    // Eliminar puntos originales
     entidad.point = undefined;
 }
 
@@ -870,10 +907,9 @@ async function cargarCuevas() {
 
         entidad.name = nombrePunto(entidad);
 
-        // ELIMINAR TODOS LOS SÍMBOLOS ORIGINALES
         limpiarSimbolosOriginales(entidad);
 
-        // CREAR EXCLUSIVAMENTE EL PUNTO AMARILLO
+        // CREAR EXCLUSIVAMENTE EL PUNTO AMARILLO.
         entidad.point = new Cesium.PointGraphics({
 
             pixelSize: 8,
@@ -884,32 +920,31 @@ async function cargarCuevas() {
 
             outlineWidth: 1,
 
-            // Ajustar la posición del punto a la superficie del terreno 3D.
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
 
-            // Mantener activo el test de profundidad: el terreno puede ocultar el punto.
-            // No usar Infinity, porque dibujaría los puntos por encima del relieve.
             disableDepthTestDistance: 0
         });
     }
 
     // ==========================================
-    // AJUSTAR LAS COORDENADAS A LA ALTITUD REAL DEL TERRENO
+    // AJUSTAR LAS COORDENADAS A LA ALTITUD REAL
+    // DEL TERRENO
     // ==========================================
-    // CLAMP_TO_GROUND por sí solo puede no ser suficiente para resolver
-    // diferencias visibles al acercarse mucho al relieve. Muestreamos
-    // la elevación máxima disponible del terreno y fijamos la posición
-    // cartográfica de cada entidad a esa cota.
+
     try {
+
         estadoCapa("Cuevas", "Calculando cotas del terreno…");
 
         const proveedorTerreno = viewer.terrainProvider;
         const instante = Cesium.JulianDate.now();
 
-        const posicionesCartograficas = entidadesConPosicion.map(entidad => {
-            const posicion = entidad.position.getValue(instante);
-            return Cesium.Cartographic.fromCartesian(posicion);
-        });
+        const posicionesCartograficas =
+            entidadesConPosicion.map(entidad => {
+
+                const posicion = entidad.position.getValue(instante);
+
+                return Cesium.Cartographic.fromCartesian(posicion);
+            });
 
         await Cesium.sampleTerrainMostDetailed(
             proveedorTerreno,
@@ -920,11 +955,12 @@ async function cargarCuevas() {
         let etiquetasCreadas = 0;
 
         for (let i = 0; i < entidadesConPosicion.length; i++) {
+
             const entidad = entidadesConPosicion[i];
             const cartografica = posicionesCartograficas[i];
 
             if (cartografica && Number.isFinite(cartografica.height)) {
-                // Altura muestreada del terreno para este yacimiento.
+
                 const alturaTerreno = cartografica.height;
                 const margenVisual = 0.35;
 
@@ -935,46 +971,84 @@ async function cargarCuevas() {
                 );
 
                 entidad.position = posicionBase;
-                entidad.point.heightReference = Cesium.HeightReference.NONE;
+
+                entidad.point.heightReference =
+                    Cesium.HeightReference.NONE;
+
                 cotasCalculadas++;
 
-                // Crear un extremo superior para el rótulo y una línea guía.
-                // La línea une la ubicación real del yacimiento con su nombre.
-                const alturaRotulo = alturaTerreno + 100; // Separación vertical del rótulo respecto al terreno (metros)
+                // ALTURA DEL RÓTULO SOBRE EL TERRENO.
+                const alturaRotulo = alturaTerreno + 100;
+
                 const posicionRotulo = Cesium.Cartesian3.fromRadians(
                     cartografica.longitude,
                     cartografica.latitude,
                     alturaRotulo
                 );
 
+                // LÍNEA GUÍA Y NOMBRE DEL YACIMIENTO.
                 cuevas.entities.add({
+
                     id: "rotulo_yacimiento_" + entidad.id,
+
                     name: "Rótulo: " + entidad.name,
+
                     position: posicionRotulo,
+
                     polyline: {
+
                         positions: [posicionBase, posicionRotulo],
+
                         width: 2,
+
                         material: Cesium.Color.YELLOW,
+
                         clampToGround: false,
+
                         arcType: Cesium.ArcType.NONE,
-                        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 60000)
+
+                        distanceDisplayCondition:
+                            new Cesium.DistanceDisplayCondition(0, 60000)
                     },
+
                     label: {
+
                         text: entidad.name,
+
                         font: "13px Arial",
+
                         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+
                         fillColor: Cesium.Color.WHITE,
+
                         outlineColor: Cesium.Color.BLACK,
+
                         outlineWidth: 3,
+
                         showBackground: true,
-                        backgroundColor: Cesium.Color.BLACK.withAlpha(0.65),
-                        backgroundPadding: new Cesium.Cartesian2(5, 3),
-                        pixelOffset: new Cesium.Cartesian2(8, -3),
-                        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-                        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+
+                        backgroundColor:
+                            Cesium.Color.BLACK.withAlpha(0.65),
+
+                        backgroundPadding:
+                            new Cesium.Cartesian2(5, 3),
+
+                        pixelOffset:
+                            new Cesium.Cartesian2(8, -3),
+
+                        horizontalOrigin:
+                            Cesium.HorizontalOrigin.LEFT,
+
+                        verticalOrigin:
+                            Cesium.VerticalOrigin.CENTER,
+
                         disableDepthTestDistance: 0,
-                        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 60000),
-                        scaleByDistance: new Cesium.NearFarScalar(1000, 1.0, 60000, 0.75)
+
+                        distanceDisplayCondition:
+                            new Cesium.DistanceDisplayCondition(0, 60000),
+
+                        scaleByDistance:
+                            new Cesium.NearFarScalar(1000, 1.0, 60000, 0.75)
                     }
                 });
 
@@ -984,21 +1058,34 @@ async function cargarCuevas() {
 
         estadoCapa(
             "Cuevas",
-            total + " yacimientos; " + cotasCalculadas + " cotas y " + etiquetasCreadas + " rótulos con línea guía"
+            total + " yacimientos; " +
+            cotasCalculadas + " cotas y " +
+            etiquetasCreadas + " rótulos con línea guía"
         );
 
     } catch (error) {
-        console.warn("No se pudieron muestrear todas las cotas del terreno; se mantiene el ajuste automático.", error);
-        estadoCapa("Cuevas", total + " entidades; ajuste automático al terreno");
+
+        console.warn(
+            "No se pudieron muestrear todas las cotas del terreno; se mantiene el ajuste automático.",
+            error
+        );
+
+        estadoCapa(
+            "Cuevas",
+            total + " entidades; ajuste automático al terreno"
+        );
     }
 
-    // Visibilidad de la capa
+    // VISIBILIDAD DE LA CAPA.
     document.getElementById("chkCuevas")
         .addEventListener("change", e => {
+
             cuevas.show = e.target.checked;
+
+            viewer.scene.requestRender();
         });
 
-    // Control de opacidad
+    // CONTROL DE OPACIDAD.
     document.getElementById("rCuevas")
         .addEventListener("input", e => {
 
@@ -1015,14 +1102,14 @@ async function cargarCuevas() {
                         Cesium.Color.YELLOW.withAlpha(a);
                 }
 
-                // Segunda comprobación de seguridad
                 if (entidad.billboard) {
                     entidad.billboard.show = false;
                 }
             }
+
+            viewer.scene.requestRender();
         });
 
-    // Solicitar actualización de pantalla
     viewer.scene.requestRender();
 }
 
@@ -1064,7 +1151,10 @@ async function cargarLimites() {
 
     document.getElementById("chkLimites")
         .addEventListener("change", e => {
+
             limites.show = e.target.checked;
+
+            viewer.scene.requestRender();
         });
 
     document.getElementById("rLimites")
@@ -1092,6 +1182,8 @@ async function cargarLimites() {
                         Cesium.Color.RED.withAlpha(a);
                 }
             }
+
+            viewer.scene.requestRender();
         });
 
     estadoCapa(
@@ -1112,13 +1204,21 @@ async function iniciar() {
 
     // El MDT debe estar listo antes de cargar las cuevas,
     // porque sus cotas se muestrean para colocar puntos y rótulos.
+
     await cargarTerreno();
 
     const tareas = [
 
         cargarOrtofoto().catch(error => {
+
             console.error("Error en la ortofotografía", error);
-            estadoCapa("Orto", "Error al cargar ortofotografía", true);
+
+            estadoCapa(
+                "Orto",
+                "Error al cargar ortofotografía",
+                true
+            );
+
             return false;
         }),
 
@@ -1131,6 +1231,8 @@ async function iniciar() {
                 "Error al cargar puntos",
                 true
             );
+
+            return false;
         }),
 
         cargarLimites().catch(error => {
@@ -1142,6 +1244,8 @@ async function iniciar() {
                 "Error al cargar límites",
                 true
             );
+
+            return false;
         }),
 
         ...servicios.map(s =>
@@ -1166,6 +1270,7 @@ async function iniciar() {
     if (cuevas) {
 
         try {
+
             await viewer.zoomTo(cuevas);
 
         } catch (error) {
