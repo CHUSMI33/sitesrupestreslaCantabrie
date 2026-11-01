@@ -31,6 +31,37 @@ html, body, #cesiumContainer {
     font-weight:bold;
     letter-spacing:1px;
 }
+ #creditos{
+    position:absolute;
+    bottom:8px;
+    left:10px;
+    z-index:1000;
+    background:rgba(0,0,0,.55);
+    color:white;
+    padding:6px 12px;
+    border-radius:6px;
+    font-family:Arial,sans-serif;
+    font-size:12px;
+}
+#escala{
+    position:absolute;
+    bottom:12px;
+    right:12px;
+    z-index:1000;
+    background:rgba(0,0,0,.55);
+    color:white;
+    padding:8px;
+    border-radius:6px;
+    font-family:Arial,sans-serif;
+    text-align:center;
+}
+
+#barraEscala{
+    height:4px;
+    background:white;
+    margin-bottom:4px;
+}
+    
 /* PANEL DE CAPAS */
 
 #panelCapas {
@@ -225,6 +256,13 @@ hr {
     <!-- TITULO -->
 <div id="tituloVisor">
     Cuevas de Cantabria
+</div>
+<div id="creditos">
+    © Jesús Miguel García Rodríguez · Proyecto Cuevas de Cantabria · CesiumJS · Datos IGN- Gobierno de Cantabria
+</div>
+    <div id="escala">
+    <div id="barraEscala"></div>
+    <span id="textoEscala">100 m</span>
 </div>
 <!-- PANEL DE CONTROL -->
 
@@ -555,7 +593,64 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     baseLayerPicker: true,
     navigationHelpButton: true
 });
+// ==========================================
+// BARRA DE ESCALA DINÁMICA
+// ==========================================
 
+const barraEscala = document.getElementById("barraEscala");
+const textoEscala = document.getElementById("textoEscala");
+
+viewer.scene.postRender.addEventListener(function () {
+
+    const scene = viewer.scene;
+    const canvas = scene.canvas;
+
+    const y = canvas.clientHeight - 50;
+    const x = canvas.clientWidth - 180;
+
+    const p1 = new Cesium.Cartesian2(x, y);
+    const p2 = new Cesium.Cartesian2(x + 100, y);
+
+    const r1 = viewer.camera.getPickRay(p1);
+    const r2 = viewer.camera.getPickRay(p2);
+
+    if (!r1 || !r2) return;
+
+    const pos1 = scene.globe.pick(r1, scene);
+    const pos2 = scene.globe.pick(r2, scene);
+
+    if (!pos1 || !pos2) return;
+
+    const c1 = Cesium.Cartographic.fromCartesian(pos1);
+    const c2 = Cesium.Cartographic.fromCartesian(pos2);
+
+    const geodesic = new Cesium.EllipsoidGeodesic(c1, c2);
+    const metrosPixel = geodesic.surfaceDistance / 100;
+
+    if (!Number.isFinite(metrosPixel) || metrosPixel <= 0) return;
+
+    const objetivo = metrosPixel * 100;
+    const potencia = Math.pow(10, Math.floor(Math.log10(objetivo)));
+    const valores = [1, 2, 5, 10];
+
+    let distancia = potencia;
+
+    for (const v of valores) {
+        if (v * potencia <= objetivo) {
+            distancia = v * potencia;
+        }
+    }
+
+    const ancho = distancia / metrosPixel;
+
+    barraEscala.style.width = ancho + "px";
+
+    textoEscala.textContent =
+        distancia >= 1000
+        ? (distancia / 1000) + " km"
+        : distancia + " m";
+
+});
 // Hacer que los elementos 3D respeten la profundidad del terreno.
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
