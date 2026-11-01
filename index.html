@@ -512,7 +512,23 @@ const ID_LIMITES = 6087242;
 // Recursos alojados en Cesium ion.
 const ID_TERRENO = 6087291; // MDT TMDCANTABRIA (Terrain)
 const ID_ORTO = 6087292;    // Ortofotografía (Imagery)
+// ======================================
+// VISTA INICIAL Y BOTÓN CASA: CANTABRIA
+// ======================================
 
+Cesium.Camera.DEFAULT_VIEW_RECTANGLE =
+    Cesium.Rectangle.fromDegrees(
+        -4.90,  // Oeste
+         42.70, // Sur
+        -3.10,  // Este
+         43.60  // Norte
+    );
+
+Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+
+// ======================================
+// CREACIÓN DEL VISOR CESIUM
+// ======================================
 const viewer = new Cesium.Viewer("cesiumContainer", {
     terrain: Cesium.Terrain.fromWorldTerrain(),
     animation: false,
