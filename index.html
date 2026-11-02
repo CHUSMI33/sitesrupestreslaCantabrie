@@ -17,51 +17,54 @@ html, body, #cesiumContainer {
     padding: 0;
     overflow: hidden;
 }
-#tituloVisor{
-    position:absolute;
-    top:15px;
-    left:15px;
-    z-index:1000;
-    background:rgba(20,20,20,.75);
-    color:white;
-    padding:10px 18px;
-    border-radius:8px;
-    font-family:Arial,sans-serif;
-    font-size:24px;
-    font-weight:bold;
-    letter-spacing:1px;
-}
- #creditos{
-    position:absolute;
-    bottom:8px;
-    left:10px;
-    z-index:1000;
-    background:rgba(0,0,0,.55);
-    color:white;
-    padding:6px 12px;
-    border-radius:6px;
-    font-family:Arial,sans-serif;
-    font-size:12px;
-}
-#escala{
-    position:absolute;
-    bottom:12px;
-    right:12px;
-    z-index:1000;
-    background:rgba(0,0,0,.55);
-    color:white;
-    padding:8px;
-    border-radius:6px;
-    font-family:Arial,sans-serif;
-    text-align:center;
+
+#tituloVisor {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    background: rgba(20,20,20,.75);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: Arial,sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
-#barraEscala{
-    height:4px;
-    background:white;
-    margin-bottom:4px;
+#creditos {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    z-index: 1000;
+    background: rgba(0,0,0,.55);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: Arial,sans-serif;
+    font-size: 12px;
 }
-    
+
+#escala {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 1000;
+    background: rgba(0,0,0,.55);
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    font-family: Arial,sans-serif;
+    text-align: center;
+}
+
+#barraEscala {
+    height: 4px;
+    background: white;
+    margin-bottom: 4px;
+}
+
 /* PANEL DE CAPAS */
 
 #panelCapas {
@@ -198,7 +201,7 @@ html, body, #cesiumContainer {
     height: 13px;
 }
 
-/* DESLIZADOR DESHABILITADO */
+/* DESLIZADORES DESHABILITADOS */
 
 .rango:disabled {
     opacity: 0.35;
@@ -253,17 +256,20 @@ hr {
 <body>
 
 <div id="cesiumContainer"></div>
-    <!-- TITULO -->
+
 <div id="tituloVisor">
     Cuevas de Cantabria
 </div>
+
 <div id="creditos">
     © Jesús Miguel García Rodríguez · Proyecto Cuevas de Cantabria · CesiumJS · Datos IGN- Gobierno de Cantabria
 </div>
-    <div id="escala">
+
+<div id="escala">
     <div id="barraEscala"></div>
     <span id="textoEscala">100 m</span>
 </div>
+
 <!-- PANEL DE CONTROL -->
 
 <div id="panelCapas">
@@ -313,23 +319,17 @@ hr {
 
         <div class="seccion">Ortofotografía</div>
 
-       
-        <!-- ORTOFOTOGRAFÍA DESACTIVADA INICIALMENTE -->
-
         <div class="grupo">
             <div class="cabecera">
                 <input type="checkbox" id="chkOrto">
                 <label for="chkOrto">Ortofotografía</label>
             </div>
-
             <div class="fila">
                 <span>Opacidad</span>
                 <span class="valor" id="vOrto">100 %</span>
             </div>
-
             <input class="rango" type="range" id="rOrto"
                    min="0" max="100" value="100" disabled>
-
             <div class="estado" id="eOrto">Pendiente de conexión</div>
         </div>
 
@@ -348,7 +348,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vTopo">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rTopo" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rTopo"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="eTopo">Pendiente</div>
             </div>
 
@@ -361,7 +362,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vRelieve">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rRelieve" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rRelieve"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="eRelieve">Pendiente</div>
             </div>
 
@@ -374,7 +376,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vGeo">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rGeo" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rGeo"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="eGeo">Pendiente</div>
             </div>
 
@@ -387,7 +390,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vHidro">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rHidro" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rHidro"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="eHidro">Pendiente</div>
             </div>
 
@@ -400,7 +404,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vPatrimonio">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rPatrimonio" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rPatrimonio"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="ePatrimonio">Pendiente</div>
             </div>
 
@@ -413,7 +418,8 @@ hr {
                     <span>Opacidad</span>
                     <span class="valor" id="vTopoWMS">100 %</span>
                 </div>
-                <input class="rango" type="range" id="rTopoWMS" min="0" max="100" value="100">
+                <input class="rango" type="range" id="rTopoWMS"
+                       min="0" max="100" value="100" disabled>
                 <div class="estado" id="eTopoWMS">Pendiente</div>
             </div>
 
@@ -555,34 +561,33 @@ btnPanel.addEventListener("click", function () {
 // ==========================================
 
 // PEGA AQUÍ TU TOKEN DE CESIUM ION.
-// No publiques el token en repositorios o páginas
-// sin configurar previamente sus restricciones.
 
- Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlY1eVVYLUV1NjAzd1BOZjkiLCJqdGkiOiI1MGVmNTdjZi04MjNkLTQwYmUtODE5OS0xZjM1MTYyZDA1NmIiLCJpZCI6NTM1NjQ1LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTMwMjEwNDZ9.WIwtaCiZC8KkBy3kVYYHtbAoRK9fiMzlr59Dave79wM';
+Cesium.Ion.defaultAccessToken = "PEGA_AQUI_TU_TOKEN_DE_CESIUM";
 
 const ID_CUEVAS = 6088210;
 const ID_LIMITES = 6087242;
 
-// Recursos alojados en Cesium ion.
-const ID_TERRENO = 6087291; // MDT TMDCANTABRIA (Terrain)
-const ID_ORTO = 6087292;    // Ortofotografía (Imagery)
-// ======================================
-// VISTA INICIAL Y BOTÓN CASA: CANTABRIA
-// ======================================
+const ID_TERRENO = 6087291;
+const ID_ORTO = 6087292;
+
+// ==========================================
+// VISTA INICIAL: CANTABRIA
+// ==========================================
 
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE =
     Cesium.Rectangle.fromDegrees(
-        -4.90,  // Oeste
-         42.70, // Sur
-        -3.10,  // Este
-         43.60  // Norte
+        -4.90,
+        42.70,
+        -3.10,
+        43.60
     );
 
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
 
-// ======================================
-// CREACIÓN DEL VISOR CESIUM
-// ======================================
+// ==========================================
+// CREACIÓN DEL VISOR
+// ==========================================
+
 const viewer = new Cesium.Viewer("cesiumContainer", {
     terrain: Cesium.Terrain.fromWorldTerrain(),
     animation: false,
@@ -593,6 +598,7 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     baseLayerPicker: true,
     navigationHelpButton: true
 });
+
 // ==========================================
 // BARRA DE ESCALA DINÁMICA
 // ==========================================
@@ -651,7 +657,11 @@ viewer.scene.postRender.addEventListener(function () {
         : distancia + " m";
 
 });
-// Hacer que los elementos 3D respeten la profundidad del terreno.
+
+// ==========================================
+// CONFIGURACIÓN DEL TERRENO
+// ==========================================
+
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
 let cuevas = null;
@@ -659,6 +669,7 @@ let limites = null;
 
 let proveedorTerrenoMDT = null;
 const proveedorTerrenoPlano = new Cesium.EllipsoidTerrainProvider();
+
 let capaOrtofoto = null;
 
 const capasWMS = {};
@@ -736,6 +747,49 @@ function opacidad(id) {
     ) / 100;
 }
 
+// ==========================================
+// CONTROL UNIFORME DE OPACIDAD
+// ==========================================
+
+function configurarControlOpacidad(id, funcionOpacidad) {
+
+    const checkbox = document.getElementById("chk" + id);
+    const deslizador = document.getElementById("r" + id);
+    const valor = document.getElementById("v" + id);
+
+    // Estado inicial del deslizador según la casilla.
+    deslizador.disabled = !checkbox.checked;
+
+    // Activación y desactivación de la capa.
+    checkbox.addEventListener("change", function(e) {
+
+        deslizador.disabled = !e.target.checked;
+
+        if (funcionOpacidad.capa) {
+            funcionOpacidad.capa.show = e.target.checked;
+        }
+
+        viewer.scene.requestRender();
+    });
+
+    // Modificación de la opacidad.
+    deslizador.addEventListener("input", function(e) {
+
+        const porcentaje = Number(e.target.value);
+
+        valor.textContent = porcentaje + " %";
+
+        funcionOpacidad(porcentaje / 100);
+
+        viewer.scene.requestRender();
+    });
+
+}
+
+// ==========================================
+// NOMBRE DE LOS YACIMIENTOS
+// ==========================================
+
 function nombrePunto(entidad) {
 
     const campos = [
@@ -770,10 +824,8 @@ function nombrePunto(entidad) {
     return entidad.name || "Punto";
 }
 
-
 // ==========================================
 // CARGAR TERRENO MDT
-// SIN CONTROL EN LA LEYENDA
 // ==========================================
 
 async function cargarTerreno() {
@@ -783,7 +835,6 @@ async function cargarTerreno() {
         proveedorTerrenoMDT =
             await Cesium.CesiumTerrainProvider.fromIonAssetId(ID_TERRENO);
 
-        // El MDT permanece activo como terreno del visor.
         viewer.terrainProvider = proveedorTerrenoMDT;
 
         viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -794,7 +845,7 @@ async function cargarTerreno() {
 
     } catch (error) {
 
-        console.error("Error al cargar el MDT TMDCANTABRIA:", error);
+        console.error("Error al cargar el MDT:", error);
 
         return false;
     }
@@ -802,7 +853,6 @@ async function cargarTerreno() {
 
 // ==========================================
 // CARGAR ORTOFOTOGRAFÍA
-// DESACTIVADA INICIALMENTE
 // ==========================================
 
 async function cargarOrtofoto() {
@@ -821,10 +871,7 @@ async function cargarOrtofoto() {
         capaOrtofoto =
             viewer.imageryLayers.addImageryProvider(proveedor);
 
-        // ORTOFOTOGRAFÍA DESACTIVADA AL INICIAR.
         capaOrtofoto.show = false;
-
-        // Opacidad inicial del 100 %.
         capaOrtofoto.alpha = 1;
 
         chkOrto.checked = false;
@@ -832,25 +879,22 @@ async function cargarOrtofoto() {
         rOrto.disabled = true;
         vOrto.textContent = "100 %";
 
-        // ACTIVAR / DESACTIVAR ORTOFOTOGRAFÍA.
         chkOrto.addEventListener("change", e => {
 
             capaOrtofoto.show = e.target.checked;
 
-            // Habilitar el deslizador solamente cuando esté activada.
             rOrto.disabled = !e.target.checked;
 
             viewer.scene.requestRender();
         });
 
-        // CONTROL DE OPACIDAD.
         rOrto.addEventListener("input", e => {
 
-            const valor = Number(e.target.value);
+            const porcentaje = Number(e.target.value);
 
-            capaOrtofoto.alpha = valor / 100;
+            capaOrtofoto.alpha = porcentaje / 100;
 
-            vOrto.textContent = valor + " %";
+            vOrto.textContent = porcentaje + " %";
 
             viewer.scene.requestRender();
         });
@@ -904,32 +948,42 @@ async function cargarWMS(servicio) {
         const capa =
             viewer.imageryLayers.addImageryProvider(proveedor);
 
-        capa.show =
-            document.getElementById(
-                "chk" + servicio.id
-            ).checked;
+        const checkbox = document.getElementById(
+            "chk" + servicio.id
+        );
 
+        const deslizador = document.getElementById(
+            "r" + servicio.id
+        );
+
+        const valor = document.getElementById(
+            "v" + servicio.id
+        );
+
+        capa.show = checkbox.checked;
         capa.alpha = opacidad(servicio.id);
+
+        // DESLIZADOR DESACTIVADO SI LA CAPA NO ESTÁ ACTIVA.
+        deslizador.disabled = !checkbox.checked;
 
         capasWMS[servicio.id] = capa;
 
-        document.getElementById(
-            "chk" + servicio.id
-        ).addEventListener("change", e => {
+        checkbox.addEventListener("change", e => {
 
             capa.show = e.target.checked;
+
+            deslizador.disabled = !e.target.checked;
+
             viewer.scene.requestRender();
         });
 
-        document.getElementById(
-            "r" + servicio.id
-        ).addEventListener("input", e => {
+        deslizador.addEventListener("input", e => {
 
-            capa.alpha = Number(e.target.value) / 100;
+            const porcentaje = Number(e.target.value);
 
-            document.getElementById(
-                "v" + servicio.id
-            ).textContent = e.target.value + " %";
+            capa.alpha = porcentaje / 100;
+
+            valor.textContent = porcentaje + " %";
 
             viewer.scene.requestRender();
         });
@@ -1005,7 +1059,6 @@ async function cargarCuevas() {
 
         limpiarSimbolosOriginales(entidad);
 
-        // CREAR EXCLUSIVAMENTE EL PUNTO AMARILLO.
         entidad.point = new Cesium.PointGraphics({
 
             pixelSize: 8,
@@ -1023,8 +1076,7 @@ async function cargarCuevas() {
     }
 
     // ==========================================
-    // AJUSTAR LAS COORDENADAS A LA ALTITUD REAL
-    // DEL TERRENO
+    // AJUSTAR COORDENADAS A LA ALTITUD DEL MDT
     // ==========================================
 
     try {
@@ -1048,7 +1100,6 @@ async function cargarCuevas() {
         );
 
         let cotasCalculadas = 0;
-        let etiquetasCreadas = 0;
 
         for (let i = 0; i < entidadesConPosicion.length; i++) {
 
@@ -1073,7 +1124,7 @@ async function cargarCuevas() {
 
                 cotasCalculadas++;
 
-                // ALTURA DEL RÓTULO SOBRE EL TERRENO.
+                // ALTURA DEL RÓTULO.
                 const alturaRotulo = alturaTerreno + 100;
 
                 const posicionRotulo = Cesium.Cartesian3.fromRadians(
@@ -1147,22 +1198,18 @@ async function cargarCuevas() {
                             new Cesium.NearFarScalar(1000, 1.0, 60000, 0.75)
                     }
                 });
-
-                etiquetasCreadas++;
             }
         }
 
         estadoCapa(
             "Cuevas",
-            total + " yacimientos y " +
-            cotasCalculadas + "cotas  "
-           
+            total + " yacimientos y " + cotasCalculadas + " cotas"
         );
 
     } catch (error) {
 
         console.warn(
-            "No se pudieron muestrear todas las cotas del terreno; se mantiene el ajuste automático.",
+            "No se pudieron muestrear todas las cotas del terreno.",
             error
         );
 
@@ -1172,39 +1219,46 @@ async function cargarCuevas() {
         );
     }
 
-    // VISIBILIDAD DE LA CAPA.
-    document.getElementById("chkCuevas")
-        .addEventListener("change", e => {
+    // VISIBILIDAD Y OPACIDAD DE CUEVAS.
+    const chkCuevas = document.getElementById("chkCuevas");
+    const rCuevas = document.getElementById("rCuevas");
 
-            cuevas.show = e.target.checked;
+    cuevas.show = chkCuevas.checked;
 
-            viewer.scene.requestRender();
-        });
+    // Estado inicial uniforme.
+    rCuevas.disabled = !chkCuevas.checked;
 
-    // CONTROL DE OPACIDAD.
-    document.getElementById("rCuevas")
-        .addEventListener("input", e => {
+    chkCuevas.addEventListener("change", e => {
 
-            const a = Number(e.target.value) / 100;
+        cuevas.show = e.target.checked;
 
-            document.getElementById("vCuevas")
-                .textContent = e.target.value + " %";
+        rCuevas.disabled = !e.target.checked;
 
-            for (const entidad of cuevas.entities.values) {
+        viewer.scene.requestRender();
+    });
 
-                if (entidad.point) {
+    rCuevas.addEventListener("input", e => {
 
-                    entidad.point.color =
-                        Cesium.Color.YELLOW.withAlpha(a);
-                }
+        const a = Number(e.target.value) / 100;
 
-                if (entidad.billboard) {
-                    entidad.billboard.show = false;
-                }
+        document.getElementById("vCuevas")
+            .textContent = e.target.value + " %";
+
+        for (const entidad of cuevas.entities.values) {
+
+            if (entidad.point) {
+
+                entidad.point.color =
+                    Cesium.Color.YELLOW.withAlpha(a);
             }
 
-            viewer.scene.requestRender();
-        });
+            if (entidad.billboard) {
+                entidad.billboard.show = false;
+            }
+        }
+
+        viewer.scene.requestRender();
+    });
 
     viewer.scene.requestRender();
 }
@@ -1245,42 +1299,51 @@ async function cargarLimites() {
         }
     }
 
-    document.getElementById("chkLimites")
-        .addEventListener("change", e => {
+    // VISIBILIDAD Y OPACIDAD DE LÍMITES.
+    const chkLimites = document.getElementById("chkLimites");
+    const rLimites = document.getElementById("rLimites");
 
-            limites.show = e.target.checked;
+    limites.show = chkLimites.checked;
 
-            viewer.scene.requestRender();
-        });
+    // Estado inicial uniforme.
+    rLimites.disabled = !chkLimites.checked;
 
-    document.getElementById("rLimites")
-        .addEventListener("input", e => {
+    chkLimites.addEventListener("change", e => {
 
-            const a = Number(e.target.value) / 100;
+        limites.show = e.target.checked;
 
-            document.getElementById("vLimites")
-                .textContent = e.target.value + " %";
+        rLimites.disabled = !e.target.checked;
 
-            for (const entidad of limites.entities.values) {
+        viewer.scene.requestRender();
+    });
 
-                if (entidad.polyline) {
+    rLimites.addEventListener("input", e => {
 
-                    entidad.polyline.material =
-                        Cesium.Color.RED.withAlpha(a);
-                }
+        const a = Number(e.target.value) / 100;
 
-                if (entidad.polygon) {
+        document.getElementById("vLimites")
+            .textContent = e.target.value + " %";
 
-                    entidad.polygon.material =
-                        Cesium.Color.RED.withAlpha(a);
+        for (const entidad of limites.entities.values) {
 
-                    entidad.polygon.outlineColor =
-                        Cesium.Color.RED.withAlpha(a);
-                }
+            if (entidad.polyline) {
+
+                entidad.polyline.material =
+                    Cesium.Color.RED.withAlpha(a);
             }
 
-            viewer.scene.requestRender();
-        });
+            if (entidad.polygon) {
+
+                entidad.polygon.material =
+                    Cesium.Color.RED.withAlpha(a);
+
+                entidad.polygon.outlineColor =
+                    Cesium.Color.RED.withAlpha(a);
+            }
+        }
+
+        viewer.scene.requestRender();
+    });
 
     estadoCapa(
         "Limites",
@@ -1297,9 +1360,6 @@ async function iniciar() {
     estadoGeneral(
         "Cargando capas. Los controles ya están disponibles."
     );
-
-    // El MDT debe estar listo antes de cargar las cuevas,
-    // porque sus cotas se muestrean para colocar puntos y rótulos.
 
     await cargarTerreno();
 
