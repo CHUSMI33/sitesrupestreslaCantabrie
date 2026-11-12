@@ -541,12 +541,17 @@ Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZS
 
 const ID_CUEVAS = 6088210;
 const ID_LIMITES = 6087242;
+
 const ID_TERRENO = 6087291;
 const ID_ORTO = 6087292;
 
-// Vista inicial ANTES de crear el Viewer (bug corregido)
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE =
-    Cesium.Rectangle.fromDegrees(-4.90, 42.70, -3.10, 43.60);
+    Cesium.Rectangle.fromDegrees(
+        -4.90,
+        42.70,
+        -3.10,
+        43.60
+    );
 
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
 
@@ -558,12 +563,8 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     homeButton: true,
     sceneModePicker: true,
     baseLayerPicker: true,
-    navigationHelpButton: true,
-    requestRenderMode: true,
-    maximumRenderTimeChange: Infinity
+    navigationHelpButton: true
 });
-
-viewer.scene.globe.depthTestAgainstTerrain = true;
 
 const barraEscala = document.getElementById("barraEscala");
 const textoEscala = document.getElementById("textoEscala");
@@ -617,48 +618,65 @@ viewer.scene.postRender.addEventListener(function () {
         distancia >= 1000
         ? (distancia / 1000) + " km"
         : distancia + " m";
+
 });
+
+viewer.scene.globe.depthTestAgainstTerrain = true;
 
 let cuevas = null;
 let limites = null;
 
+let proveedorTerrenoMDT = null;
+const proveedorTerrenoPlano = new Cesium.EllipsoidTerrainProvider();
+
+let capaOrtofoto = null;
+
+const capasWMS = {};
+
 const servicios = [
+
     {
         id: "Topo",
         nombre: "Cartografía básica topográfica (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
         layers: "0"
     },
+
     {
         id: "Relieve",
         nombre: "Relieve (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Relieve/MapServer/WMSServer",
         layers: "0,1"
     },
+
     {
         id: "Geo",
         nombre: "Serie geológica raster (WMTS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Serie_Geologico_Raster/MapServer/WMSServer",
         layers: "0,1,2"
     },
+
     {
         id: "Hidro",
         nombre: "Hidrografía (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Hidrografia/MapServer/WMSServer",
         layers: "0"
     },
+
     {
         id: "Patrimonio",
         nombre: "Patrimonio y cultura (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Patrimonio_y_Cultura/MapServer/WMSServer",
         layers: "0,1,2,3,4,5,6"
     },
+
     {
         id: "TopoWMS",
         nombre: "Cartografía básica topográfica (WMS)",
         url: "https://geoservicios.cantabria.es/inspire/services/Cartografia_Basica_Topografica/MapServer/WMSServer",
         layers: "0"
     }
+
 ];
 
 function estadoGeneral(texto) {
@@ -666,47 +684,77 @@ function estadoGeneral(texto) {
 }
 
 function estadoCapa(id, texto, error = false) {
+
     const elemento = document.getElementById("e" + id);
-    if (!elemento) return;
+
     elemento.textContent = texto;
     elemento.classList.toggle("error", error);
 }
 
-// Control de opacidad unificado. `aplicar` recibe un número 0..1.
-function configurarControlOpacidad(id, aplicar) {
+function opacidad(id) {
+
+    return Number(
+        document.getElementById("r" + id).value
+    ) / 100;
+}
+
+function configurarControlOpacidad(id, funcionOpacidad) {
 
     const checkbox = document.getElementById("chk" + id);
     const deslizador = document.getElementById("r" + id);
     const valor = document.getElementById("v" + id);
 
-    if (!checkbox || !deslizador || !valor) return;
-
     deslizador.disabled = !checkbox.checked;
 
     checkbox.addEventListener("change", function(e) {
+
         deslizador.disabled = !e.target.checked;
-        aplicar(Number(deslizador.value) / 100);
+
+        if (funcionOpacidad.capa) {
+            funcionOpacidad.capa.show = e.target.checked;
+        }
+
         viewer.scene.requestRender();
     });
 
     deslizador.addEventListener("input", function(e) {
+
         const porcentaje = Number(e.target.value);
+
         valor.textContent = porcentaje + " %";
-        aplicar(porcentaje / 100);
+
+        funcionOpacidad(porcentaje / 100);
+
         viewer.scene.requestRender();
     });
+
 }
 
 function nombrePunto(entidad) {
 
-    const campos = ["Cueva", "Nombre", "nombre", "Name", "name"];
+    const campos = [
+        "Cueva",
+        "Nombre",
+        "nombre",
+        "Name",
+        "name"
+    ];
 
     if (entidad.properties) {
+
         for (const campo of campos) {
+
             const p = entidad.properties[campo];
+
             if (p && p.getValue) {
+
                 const v = p.getValue();
-                if (v !== undefined && v !== null && v !== "") {
+
+                if (
+                    v !== undefined &&
+                    v !== null &&
+                    v !== ""
+                ) {
                     return String(v);
                 }
             }
@@ -717,14 +765,24 @@ function nombrePunto(entidad) {
 }
 
 async function cargarTerreno() {
+
     try {
-        viewer.terrainProvider =
+
+        proveedorTerrenoMDT =
             await Cesium.CesiumTerrainProvider.fromIonAssetId(ID_TERRENO);
+
+        viewer.terrainProvider = proveedorTerrenoMDT;
+
         viewer.scene.globe.depthTestAgainstTerrain = true;
+
         console.log("MDT TMDCANTABRIA conectado correctamente.");
+
         return true;
+
     } catch (error) {
+
         console.error("Error al cargar el MDT:", error);
+
         return false;
     }
 }
@@ -738,33 +796,55 @@ async function cargarOrtofoto() {
     const vOrto = document.getElementById("vOrto");
 
     try {
+
         const proveedor =
             await Cesium.IonImageryProvider.fromAssetId(ID_ORTO);
 
-        const capa = viewer.imageryLayers.addImageryProvider(proveedor);
-        capa.show = false;
-        capa.alpha = 1;
+        capaOrtofoto =
+            viewer.imageryLayers.addImageryProvider(proveedor);
+
+        capaOrtofoto.show = false;
+        capaOrtofoto.alpha = 1;
 
         chkOrto.checked = false;
         rOrto.value = 100;
         rOrto.disabled = true;
         vOrto.textContent = "100 %";
 
-        configurarControlOpacidad("Orto", a => {
-            capa.show = chkOrto.checked;
-            capa.alpha = a;
+        chkOrto.addEventListener("change", e => {
+
+            capaOrtofoto.show = e.target.checked;
+
+            rOrto.disabled = !e.target.checked;
+
+            viewer.scene.requestRender();
+        });
+
+        rOrto.addEventListener("input", e => {
+
+            const porcentaje = Number(e.target.value);
+
+            capaOrtofoto.alpha = porcentaje / 100;
+
+            vOrto.textContent = porcentaje + " %";
+
+            viewer.scene.requestRender();
         });
 
         estadoCapa("Orto", "Conectada");
+
         return true;
 
     } catch (error) {
+
         console.error("Error al cargar la ortofotografía:", error);
+
         estadoCapa(
             "Orto",
             "Error al cargar la ortofotografía; comprueba Asset ID y token",
             true
         );
+
         return false;
     }
 }
@@ -774,51 +854,91 @@ async function cargarWMS(servicio) {
     estadoCapa(servicio.id, "Conectando…");
 
     try {
-        const proveedor = new Cesium.WebMapServiceImageryProvider({
-            url: servicio.url,
-            layers: servicio.layers,
-            parameters: {
-                service: "WMS",
-                version: "1.1.1",
-                request: "GetMap",
-                styles: "",
-                format: "image/png",
-                transparent: true
-            }
-        });
+
+        const proveedor =
+            new Cesium.WebMapServiceImageryProvider({
+
+                url: servicio.url,
+                layers: servicio.layers,
+
+                parameters: {
+                    service: "WMS",
+                    version: "1.1.1",
+                    request: "GetMap",
+                    styles: "",
+                    format: "image/png",
+                    transparent: true
+                }
+            });
 
         await proveedor.readyPromise;
 
-        const capa = viewer.imageryLayers.addImageryProvider(proveedor);
+        const capa =
+            viewer.imageryLayers.addImageryProvider(proveedor);
 
-        // Mantener las WMS por debajo de la ortofoto (orden estable).
-        viewer.imageryLayers.lowerToBottom(capa);
+        const checkbox = document.getElementById(
+            "chk" + servicio.id
+        );
 
-        const checkbox = document.getElementById("chk" + servicio.id);
-        const deslizador = document.getElementById("r" + servicio.id);
+        const deslizador = document.getElementById(
+            "r" + servicio.id
+        );
+
+        const valor = document.getElementById(
+            "v" + servicio.id
+        );
 
         capa.show = checkbox.checked;
-        capa.alpha = Number(deslizador.value) / 100;
+        capa.alpha = opacidad(servicio.id);
 
-        configurarControlOpacidad(servicio.id, a => {
-            capa.show = checkbox.checked;
-            capa.alpha = a;
+        deslizador.disabled = !checkbox.checked;
+
+        capasWMS[servicio.id] = capa;
+
+        checkbox.addEventListener("change", e => {
+
+            capa.show = e.target.checked;
+
+            deslizador.disabled = !e.target.checked;
+
+            viewer.scene.requestRender();
+        });
+
+        deslizador.addEventListener("input", e => {
+
+            const porcentaje = Number(e.target.value);
+
+            capa.alpha = porcentaje / 100;
+
+            valor.textContent = porcentaje + " %";
+
+            viewer.scene.requestRender();
         });
 
         estadoCapa(servicio.id, "Servicio conectado");
+
         return true;
 
     } catch (error) {
+
         console.error("Error WMS " + servicio.nombre, error);
-        estadoCapa(servicio.id, "Error: revisa F12 / Consola", true);
+
+        estadoCapa(
+            servicio.id,
+            "Error: revisa F12 / Consola",
+            true
+        );
+
         return false;
     }
 }
 
 function limpiarSimbolosOriginales(entidad) {
+
     if (entidad.billboard) {
         entidad.billboard.show = false;
     }
+
     entidad.billboard = undefined;
     entidad.label = undefined;
     entidad.model = undefined;
@@ -829,13 +949,18 @@ async function cargarCuevas() {
 
     estadoCapa("Cuevas", "Cargando…");
 
-    const recurso = await Cesium.IonResource.fromAssetId(ID_CUEVAS);
+    const recurso =
+        await Cesium.IonResource.fromAssetId(ID_CUEVAS);
 
-    // Punto 11: sin markerSize/markerSymbol; limpiamos símbolos después.
-    cuevas = await Cesium.GeoJsonDataSource.load(recurso, {
-        clampToGround: true,
-        markerColor: Cesium.Color.YELLOW
-    });
+    cuevas = await Cesium.GeoJsonDataSource.load(
+        recurso,
+        {
+            clampToGround: true,
+            markerSize: 0,
+            markerSymbol: "",
+            markerColor: Cesium.Color.YELLOW
+        }
+    );
 
     viewer.dataSources.add(cuevas);
 
@@ -850,47 +975,53 @@ async function cargarCuevas() {
         entidadesConPosicion.push(entidad);
 
         entidad.name = nombrePunto(entidad);
+
         limpiarSimbolosOriginales(entidad);
 
         entidad.point = new Cesium.PointGraphics({
+
             pixelSize: 8,
+
             color: Cesium.Color.YELLOW,
+
             outlineColor: Cesium.Color.BLACK,
+
             outlineWidth: 1,
+
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-            // Bug: 0 ocultaba el punto tras el terreno.
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
+
+            disableDepthTestDistance: 0
         });
     }
 
     try {
+
         estadoCapa("Cuevas", "Calculando cotas del terreno…");
 
         const proveedorTerreno = viewer.terrainProvider;
         const instante = Cesium.JulianDate.now();
-        const LOTE = 100;
+
+        const posicionesCartograficas =
+            entidadesConPosicion.map(entidad => {
+
+                const posicion = entidad.position.getValue(instante);
+
+                return Cesium.Cartographic.fromCartesian(posicion);
+            });
+
+        await Cesium.sampleTerrainMostDetailed(
+            proveedorTerreno,
+            posicionesCartograficas
+        );
+
         let cotasCalculadas = 0;
 
-        for (let inicio = 0; inicio < entidadesConPosicion.length; inicio += LOTE) {
+        for (let i = 0; i < entidadesConPosicion.length; i++) {
 
-            const lote = entidadesConPosicion.slice(inicio, inicio + LOTE);
+            const entidad = entidadesConPosicion[i];
+            const cartografica = posicionesCartograficas[i];
 
-            const cartos = lote.map(entidad =>
-                Cesium.Cartographic.fromCartesian(
-                    entidad.position.getValue(instante)
-                )
-            );
-
-            await Cesium.sampleTerrainMostDetailed(proveedorTerreno, cartos);
-
-            for (let i = 0; i < lote.length; i++) {
-
-                const entidad = lote[i];
-                const cartografica = cartos[i];
-
-                if (!cartografica || !Number.isFinite(cartografica.height)) {
-                    continue;
-                }
+            if (cartografica && Number.isFinite(cartografica.height)) {
 
                 const alturaTerreno = cartografica.height;
                 const margenVisual = 0.60;
@@ -902,7 +1033,9 @@ async function cargarCuevas() {
                 );
 
                 entidad.position = posicionBase;
-                entidad.point.heightReference = Cesium.HeightReference.NONE;
+
+                entidad.point.heightReference =
+                    Cesium.HeightReference.NONE;
 
                 cotasCalculadas++;
 
@@ -915,42 +1048,70 @@ async function cargarCuevas() {
                 );
 
                 cuevas.entities.add({
+
                     id: "rotulo_yacimiento_" + entidad.id,
+
                     name: "Rótulo: " + entidad.name,
+
                     position: posicionRotulo,
+
                     polyline: {
+
                         positions: [posicionBase, posicionRotulo],
+
                         width: 2,
+
                         material: Cesium.Color.YELLOW,
+
                         clampToGround: false,
+
                         arcType: Cesium.ArcType.NONE,
+
                         distanceDisplayCondition:
                             new Cesium.DistanceDisplayCondition(0, 60000)
                     },
+
                     label: {
+
                         text: entidad.name,
+
                         font: "13px Arial",
+
                         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+
                         fillColor: Cesium.Color.WHITE,
+
                         outlineColor: Cesium.Color.BLACK,
+
                         outlineWidth: 3,
+
                         showBackground: true,
-                        backgroundColor: Cesium.Color.BLACK.withAlpha(0.65),
-                        backgroundPadding: new Cesium.Cartesian2(5, 3),
-                        pixelOffset: new Cesium.Cartesian2(8, -3),
-                        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-                        verticalOrigin: Cesium.VerticalOrigin.CENTER,
-                        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+
+                        backgroundColor:
+                            Cesium.Color.BLACK.withAlpha(0.65),
+
+                        backgroundPadding:
+                            new Cesium.Cartesian2(5, 3),
+
+                        pixelOffset:
+                            new Cesium.Cartesian2(8, -3),
+
+                        horizontalOrigin:
+                            Cesium.HorizontalOrigin.LEFT,
+
+                        verticalOrigin:
+                            Cesium.VerticalOrigin.CENTER,
+
+                        disableDepthTestDistance: 0,
+
                         distanceDisplayCondition:
                             new Cesium.DistanceDisplayCondition(0, 60000),
+
                         scaleByDistance:
                             new Cesium.NearFarScalar(1000, 1.0, 60000, 0.75)
                     }
                 });
             }
-
-            // Ceder el hilo para no bloquear la UI entre lotes.
-            await new Promise(r => setTimeout(r, 0));
         }
 
         estadoCapa(
@@ -959,10 +1120,12 @@ async function cargarCuevas() {
         );
 
     } catch (error) {
+
         console.warn(
             "No se pudieron muestrear todas las cotas del terreno.",
             error
         );
+
         estadoCapa(
             "Cuevas",
             total + " entidades; ajuste automático al terreno"
@@ -970,59 +1133,121 @@ async function cargarCuevas() {
     }
 
     const chkCuevas = document.getElementById("chkCuevas");
+    const rCuevas = document.getElementById("rCuevas");
+
     cuevas.show = chkCuevas.checked;
 
-    configurarControlOpacidad("Cuevas", a => {
-        cuevas.show = chkCuevas.checked;
+    rCuevas.disabled = !chkCuevas.checked;
+
+    chkCuevas.addEventListener("change", e => {
+
+        cuevas.show = e.target.checked;
+
+        rCuevas.disabled = !e.target.checked;
+
+        viewer.scene.requestRender();
+    });
+
+    rCuevas.addEventListener("input", e => {
+
+        const a = Number(e.target.value) / 100;
+
+        document.getElementById("vCuevas")
+            .textContent = e.target.value + " %";
+
         for (const entidad of cuevas.entities.values) {
+
             if (entidad.point) {
-                entidad.point.color = Cesium.Color.YELLOW.withAlpha(a);
+
+                entidad.point.color =
+                    Cesium.Color.YELLOW.withAlpha(a);
             }
+
             if (entidad.billboard) {
                 entidad.billboard.show = false;
             }
         }
+
+        viewer.scene.requestRender();
     });
+
+    viewer.scene.requestRender();
 }
 
 async function cargarLimites() {
 
     estadoCapa("Limites", "Cargando…");
 
-    const recurso = await Cesium.IonResource.fromAssetId(ID_LIMITES);
+    const recurso =
+        await Cesium.IonResource.fromAssetId(ID_LIMITES);
 
-    limites = await Cesium.GeoJsonDataSource.load(recurso, {
-        clampToGround: true
-    });
+    limites = await Cesium.GeoJsonDataSource.load(
+        recurso,
+        {
+            clampToGround: true
+        }
+    );
 
     viewer.dataSources.add(limites);
 
     for (const entidad of limites.entities.values) {
+
         if (entidad.polyline) {
+
             entidad.polyline.width = 3;
             entidad.polyline.material = Cesium.Color.RED;
             entidad.polyline.clampToGround = true;
         }
+
         if (entidad.polygon) {
+
             entidad.polygon.material = Cesium.Color.RED;
             entidad.polygon.outlineColor = Cesium.Color.RED;
         }
     }
 
     const chkLimites = document.getElementById("chkLimites");
+    const rLimites = document.getElementById("rLimites");
+
     limites.show = chkLimites.checked;
 
-    configurarControlOpacidad("Limites", a => {
-        limites.show = chkLimites.checked;
+    rLimites.disabled = !chkLimites.checked;
+
+    chkLimites.addEventListener("change", e => {
+
+        limites.show = e.target.checked;
+
+        rLimites.disabled = !e.target.checked;
+
+        viewer.scene.requestRender();
+    });
+
+    rLimites.addEventListener("input", e => {
+
+        const a = Number(e.target.value) / 100;
+
+        document.getElementById("vLimites")
+            .textContent = e.target.value + " %";
+
         for (const entidad of limites.entities.values) {
+
             if (entidad.polyline) {
-                entidad.polyline.material = Cesium.Color.RED.withAlpha(a);
+
+                entidad.polyline.material =
+                    Cesium.Color.RED.withAlpha(a);
             }
+
             if (entidad.polygon) {
-                entidad.polygon.material = Cesium.Color.RED.withAlpha(a);
-                entidad.polygon.outlineColor = Cesium.Color.RED.withAlpha(a);
+
+                entidad.polygon.material =
+                    Cesium.Color.RED.withAlpha(a);
+
+                entidad.polygon.outlineColor =
+                    Cesium.Color.RED.withAlpha(a);
             }
         }
+
+        viewer.scene.requestRender();
     });
 
     estadoCapa(
@@ -1040,48 +1265,82 @@ async function iniciar() {
     await cargarTerreno();
 
     const tareas = [
+
         cargarOrtofoto().catch(error => {
+
             console.error("Error en la ortofotografía", error);
-            estadoCapa("Orto", "Error al cargar ortofotografía", true);
+
+            estadoCapa(
+                "Orto",
+                "Error al cargar ortofotografía",
+                true
+            );
+
             return false;
         }),
+
         cargarCuevas().catch(error => {
+
             console.error("Error en los puntos", error);
-            estadoCapa("Cuevas", "Error al cargar puntos", true);
+
+            estadoCapa(
+                "Cuevas",
+                "Error al cargar puntos",
+                true
+            );
+
             return false;
         }),
+
         cargarLimites().catch(error => {
+
             console.error("Error en límites", error);
-            estadoCapa("Limites", "Error al cargar límites", true);
+
+            estadoCapa(
+                "Limites",
+                "Error al cargar límites",
+                true
+            );
+
             return false;
         }),
+
         ...servicios.map(s =>
+
             cargarWMS(s).catch(error => {
+
                 console.error("Error de servicio", s.nombre, error);
-                estadoCapa(s.id, "Error de conexión", true);
+
+                estadoCapa(
+                    s.id,
+                    "Error de conexión",
+                    true
+                );
+
                 return false;
             })
         )
     ];
 
-    const resultados = await Promise.allSettled(tareas);
-
-    const fallos = resultados.filter(r =>
-        r.status === "rejected" || r.value === false
-    ).length;
+    await Promise.allSettled(tareas);
 
     if (cuevas) {
+
         try {
+
             await viewer.zoomTo(cuevas);
+
         } catch (error) {
-            console.warn("No se pudo encuadrar sitespointA", error);
+
+            console.warn(
+                "No se pudo encuadrar sitespointA",
+                error
+            );
         }
     }
 
     estadoGeneral(
-        fallos === 0
-            ? "Proceso finalizado. Activa las capas que quieras consultar."
-            : "Proceso finalizado con " + fallos + " capa(s) con error. Revisa la consola."
+        "Proceso finalizado. Activa las capas que quieras consultar."
     );
 
     viewer.scene.requestRender();
